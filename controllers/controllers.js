@@ -1,5 +1,4 @@
 const { fetchTopics, fetchArticle } = require("../models/models");
-const { trigger404 } = require("./error-controllers");
 
 exports.getTopics = async (req, res, next) => {
   try {
