@@ -1,3 +1,4 @@
+const { convertTimestampToDate } = require("../db/helpers/utils");
 const {
   fetchTopics,
   fetchArticle,
@@ -37,8 +38,8 @@ exports.patchArticleById = async (req, res, next) => {
     const { rows: article } = await fetchArticle(id);
     if (article.length === 1) {
       // if exists then patch
-      await updateArticleById(id, number);
-      res.status(204).send();
+      const { rows: patchedArticle } = await updateArticleById(id, number);
+      res.status(200).send(patchedArticle[0]);
     } else {
       // otherwise throw 404
       next({ status: 404, msg: "Article not found" });
