@@ -1,7 +1,11 @@
 const express = require("express");
 const app = express();
 
-const { getTopics, getArticleById } = require("./controllers/controllers");
+const {
+  getTopics,
+  getArticleById,
+  patchArticleById,
+} = require("./controllers/controllers");
 const {
   trigger404,
   psqlErrors,
@@ -15,6 +19,7 @@ app.get("/api/topics", getTopics);
 
 // articles
 app.get("/api/articles/:article_id", getArticleById);
+app.patch("/api/articles/:article_id", patchArticleById);
 
 // errors
 app.all("/*", trigger404);
