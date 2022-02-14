@@ -83,7 +83,7 @@ describe("app.js", () => {
       });
     });
     describe("PATCH", () => {
-      test("status:20, updates the correct article_id with the amount of votes entered and returns updated article object", () => {
+      test("status:200, updates the correct article_id with the amount of votes entered and returns updated article object", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: 100 })
