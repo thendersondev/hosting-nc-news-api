@@ -1,4 +1,3 @@
-const { convertTimestampToDate } = require("../db/helpers/utils");
 const {
   fetchArticle,
   updateArticleById,
