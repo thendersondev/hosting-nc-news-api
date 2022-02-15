@@ -1,7 +1,18 @@
+const { convertTimestampToDate } = require("../db/helpers/utils");
 const {
   fetchArticle,
   updateArticleById,
+  fetchAllArticles,
 } = require("../models/articles-models");
+
+exports.getArticles = async (req, res, next) => {
+  try {
+    const { rows: articles } = await fetchAllArticles();
+    res.status(200).send({ articles });
+  } catch (err) {
+    next(err);
+  }
+};
 
 exports.getArticleById = async (req, res, next) => {
   try {

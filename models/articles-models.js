@@ -1,5 +1,9 @@
 const db = require("../db/connection");
 
+exports.fetchAllArticles = async () => {
+  return await db.query(`SELECT * FROM articles ORDER BY created_at desc;`);
+};
+
 exports.fetchArticle = async (id) => {
   const { rows } = await db.query(
     `SELECT * FROM articles WHERE article_id = $1`,
