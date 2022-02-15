@@ -43,8 +43,8 @@ describe("app.js", () => {
         return request(app)
           .get("/api/articles/1")
           .expect(200)
-          .then(({ body }) => {
-            expect(convertTimestampToDate(body)).toEqual(
+          .then(({ body: { article } }) => {
+            expect(convertTimestampToDate(article)).toEqual(
               expect.objectContaining({
                 article_id: 1,
                 title: "Living in the shadow of a great man",
@@ -88,8 +88,8 @@ describe("app.js", () => {
           .patch("/api/articles/1")
           .send({ inc_votes: 100 })
           .expect(200)
-          .then(({ body }) => {
-            expect(convertTimestampToDate(body)).toEqual(
+          .then(({ body: { article } }) => {
+            expect(convertTimestampToDate(article)).toEqual(
               expect.objectContaining({
                 article_id: 1,
                 title: "Living in the shadow of a great man",
@@ -128,7 +128,7 @@ describe("app.js", () => {
             );
           });
       });
-      test("status:400, returns invalid inputwhen passed invalid patch body (invalid key)", () => {
+      test("status:400, returns invalid input when passed invalid patch body (invalid key)", () => {
         return request(app)
           .patch("/api/articles/eight")
           .send({ "not a valid key": 100 })
