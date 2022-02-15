@@ -37,6 +37,42 @@ describe("app.js", () => {
       });
     });
   });
+  describe("/api/articles", () => {
+    describe.only("GET", () => {
+      test("status:200, returns an array of articles", () => {
+        return request(app)
+          .get("/api/articles")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).toHaveLength(12);
+            articles.forEach((article) => {
+              expect(convertTimestampToDate(article)).toEqual(
+                expect.objectContaining({
+                  article_id: expect.any(Number),
+                  title: expect.any(String),
+                  topic: expect.any(String),
+                  author: expect.any(String),
+                  body: expect.any(String),
+                  created_at: expect.any(Date),
+                  votes: expect.any(Number),
+                })
+              );
+            });
+          });
+      });
+      test("returns articles sorted by date in descending order (default case)", () => {
+        return request(app)
+          .get("/api/articles")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).toBeSorted({
+              key: "created_at",
+              descending: true,
+            });
+          });
+      });
+    });
+  });
   describe("/api/articles/:article_id", () => {
     describe("GET", () => {
       test("status:200, returns an article object when passed a valid article_id", () => {
