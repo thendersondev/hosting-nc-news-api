@@ -15,7 +15,7 @@ exports.fetchArticle = async (id) => {
 };
 
 exports.updateArticleById = async (id, number) => {
-  return await db.query(
+  const { rows } = await db.query(
     `
       UPDATE articles 
       SET votes = votes + $1
@@ -23,4 +23,5 @@ exports.updateArticleById = async (id, number) => {
       RETURNING *;`,
     [number, id]
   );
+  return rows[0];
 };
