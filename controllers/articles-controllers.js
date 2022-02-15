@@ -22,7 +22,8 @@ exports.getArticleById = async (req, res, next) => {
       fetchArticle(id),
       fetchCommentsByArticleId(id),
     ]);
-    res.status(200).send({ article, comment_count: comments.length });
+    article.comment_count = comments.length;
+    res.status(200).send({ article });
   } catch (err) {
     next(err);
   }

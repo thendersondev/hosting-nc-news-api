@@ -96,9 +96,15 @@ describe("app.js", () => {
         return request(app)
           .get("/api/articles/1")
           .expect(200)
-          .then(({ body: { comment_count } }) => {
-            expect(comment_count).toBe(11);
-          });
+          .then(
+            ({
+              body: {
+                article: { comment_count },
+              },
+            }) => {
+              expect(comment_count).toBe(11);
+            }
+          );
       });
       test("status:400, returns error message when passed an invalid article_id", () => {
         return request(app)
