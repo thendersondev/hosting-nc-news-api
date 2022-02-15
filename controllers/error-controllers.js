@@ -20,3 +20,7 @@ exports.customErrors = (err, req, res, next) => {
     next(err);
   }
 };
+
+exports.trigger500 = (err, req, res) => {
+  res.status(500).send(err);
+};

@@ -1,15 +1,18 @@
 const express = require("express");
 const app = express();
 
+const { getTopics } = require("./controllers/topics-controllers");
+
 const {
-  getTopics,
   getArticleById,
   patchArticleById,
-} = require("./controllers/controllers");
+} = require("./controllers/articles-controllers");
+
 const {
   trigger404,
   psqlErrors,
   customErrors,
+  trigger500,
 } = require("./controllers/error-controllers");
 
 app.use(express.json());
@@ -25,5 +28,6 @@ app.patch("/api/articles/:article_id", patchArticleById);
 app.all("/*", trigger404);
 app.use(psqlErrors);
 app.use(customErrors);
+app.use(trigger500);
 
 module.exports = app;
