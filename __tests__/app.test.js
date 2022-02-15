@@ -23,9 +23,9 @@ describe("app.js", () => {
         return request(app)
           .get("/api/topics")
           .expect(200)
-          .then(({ body }) => {
-            expect(body.length).toBe(3);
-            body.forEach((topic) =>
+          .then(({ body: { topics } }) => {
+            expect(topics.length).toBe(3);
+            topics.forEach((topic) =>
               expect(topic).toEqual(
                 expect.objectContaining({
                   slug: expect.any(String),
@@ -152,6 +152,27 @@ describe("app.js", () => {
                 msg: "Article not found",
               })
             );
+          });
+      });
+    });
+  });
+  describe("/api/users", () => {
+    describe("GET", () => {
+      test("status:200, returns an array of user objects", () => {
+        return request(app)
+          .get("/api/users")
+          .expect(200)
+          .then(({ body: { users } }) => {
+            expect(users).toHaveLength(4);
+            users.forEach((user) => {
+              expect(user).toEqual(
+                expect.objectContaining({
+                  username: expect.any(String),
+                  name: expect.any(String),
+                  avatar_url: expect.any(String),
+                })
+              );
+            });
           });
       });
     });
