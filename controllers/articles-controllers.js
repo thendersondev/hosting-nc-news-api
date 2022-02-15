@@ -4,6 +4,8 @@ const {
   fetchAllArticles,
 } = require("../models/articles-models");
 
+const { fetchCommentsByArticleId } = require("../models/comments-models");
+
 exports.getArticles = async (req, res, next) => {
   try {
     const { rows: articles } = await fetchAllArticles();
@@ -16,8 +18,11 @@ exports.getArticles = async (req, res, next) => {
 exports.getArticleById = async (req, res, next) => {
   try {
     const { article_id: id } = req.params;
-    const article = await fetchArticle(id);
-    res.status(200).send({ article });
+    const [article, { rows: comments }] = await Promise.all([
+      fetchArticle(id),
+      fetchCommentsByArticleId(id),
+    ]);
+    res.status(200).send({ article, comment_count: comments.length });
   } catch (err) {
     next(err);
   }
