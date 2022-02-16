@@ -3,7 +3,6 @@ const request = require("supertest");
 const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data");
 const db = require("../db/connection");
-const { convertTimestampToDate } = require("../db/helpers/utils");
 
 afterAll(() => db.end());
 beforeEach(() => seed(data));
@@ -38,7 +37,7 @@ describe("app.js", () => {
     });
   });
   describe("/api/articles", () => {
-    describe.only("GET", () => {
+    describe("GET", () => {
       test("status:200, returns an array of articles", () => {
         return request(app)
           .get("/api/articles")
@@ -46,14 +45,14 @@ describe("app.js", () => {
           .then(({ body: { articles } }) => {
             expect(articles).toHaveLength(12);
             articles.forEach((article) => {
-              expect(convertTimestampToDate(article)).toEqual(
+              expect(article).toEqual(
                 expect.objectContaining({
                   article_id: expect.any(Number),
                   title: expect.any(String),
                   topic: expect.any(String),
                   author: expect.any(String),
                   body: expect.any(String),
-                  created_at: expect.any(Date),
+                  created_at: expect.any(String),
                   votes: expect.any(Number),
                 })
               );
@@ -80,18 +79,32 @@ describe("app.js", () => {
           .get("/api/articles/1")
           .expect(200)
           .then(({ body: { article } }) => {
-            expect(convertTimestampToDate(article)).toEqual(
+            expect(article).toEqual(
               expect.objectContaining({
                 article_id: 1,
                 title: "Living in the shadow of a great man",
                 topic: "mitch",
                 author: "butter_bridge",
                 body: "I find this existence challenging",
-                created_at: expect.any(Date),
+                created_at: expect.any(String),
                 votes: 100,
               })
             );
           });
+      });
+      test("status:200, also returns key of comments_count with value of how many comments an article has", () => {
+        return request(app)
+          .get("/api/articles/1")
+          .expect(200)
+          .then(
+            ({
+              body: {
+                article: { comment_count },
+              },
+            }) => {
+              expect(comment_count).toBe("11");
+            }
+          );
       });
       test("status:400, returns error message when passed an invalid article_id", () => {
         return request(app)
@@ -125,14 +138,14 @@ describe("app.js", () => {
           .send({ inc_votes: 100 })
           .expect(200)
           .then(({ body: { article } }) => {
-            expect(convertTimestampToDate(article)).toEqual(
+            expect(article).toEqual(
               expect.objectContaining({
                 article_id: 1,
                 title: "Living in the shadow of a great man",
                 topic: "mitch",
                 author: "butter_bridge",
                 body: "I find this existence challenging",
-                created_at: expect.any(Date),
+                created_at: expect.any(String),
                 votes: 200,
               })
             );
@@ -188,27 +201,6 @@ describe("app.js", () => {
                 msg: "Article not found",
               })
             );
-          });
-      });
-    });
-  });
-  describe("/api/users", () => {
-    describe("GET", () => {
-      test("status:200, returns an array of user objects", () => {
-        return request(app)
-          .get("/api/users")
-          .expect(200)
-          .then(({ body: { users } }) => {
-            expect(users).toHaveLength(4);
-            users.forEach((user) => {
-              expect(user).toEqual(
-                expect.objectContaining({
-                  username: expect.any(String),
-                  name: expect.any(String),
-                  avatar_url: expect.any(String),
-                })
-              );
-            });
           });
       });
     });
