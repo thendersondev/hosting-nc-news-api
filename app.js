@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 
+// controller requiring
 const { getTopics } = require("./controllers/topics-controllers");
 const {
   getArticleById,
@@ -14,6 +15,10 @@ const {
   trigger500,
 } = require("./controllers/error-controllers");
 const { getUsers } = require("./controllers/users-controllers");
+const {
+  getCommentsByArticleId,
+} = require("./controllers/comments-controllers");
+// controller requiring
 
 app.use(express.json());
 
@@ -25,8 +30,11 @@ app.get("/api/articles", getArticles);
 app.get("/api/articles/:article_id", getArticleById);
 app.patch("/api/articles/:article_id", patchArticleById);
 
-//users
+// users
 app.get("/api/users", getUsers);
+
+// comments
+app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 
 // errors
 app.all("/*", trigger404);

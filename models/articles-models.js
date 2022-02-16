@@ -13,12 +13,12 @@ exports.fetchArticle = async (id) => {
     GROUP BY articles.article_id;`,
     [id]
   );
-  // if article exists return article
-  if (rows.length === 1) {
-    return rows[0];
-  } else {
-    // else throw 404
+  // if article doesn't exist throw 404
+  if (rows.length === 0) {
     return Promise.reject({ status: 404, msg: "Article not found" });
+  } else {
+    // else return article
+    return rows[0];
   }
 };
 

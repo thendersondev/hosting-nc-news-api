@@ -8,7 +8,7 @@ afterAll(() => db.end());
 beforeEach(() => seed(data));
 
 describe("app.js", () => {
-  test("ALL /* status:404, returns path not found when invalid path entered", () => {
+  test("ALL /* status:404, responds with path not found when invalid path entered", () => {
     return request(app)
       .get("/api/not-a-valid-url")
       .expect(404)
@@ -18,7 +18,7 @@ describe("app.js", () => {
   });
   describe("/api/topics", () => {
     describe("GET", () => {
-      test("status:200, returns an array of topic objects", () => {
+      test("status:200, responds with an array of topic objects", () => {
         return request(app)
           .get("/api/topics")
           .expect(200)
@@ -38,7 +38,7 @@ describe("app.js", () => {
   });
   describe("/api/articles", () => {
     describe("GET", () => {
-      test("status:200, returns an array of articles", () => {
+      test("status:200, responds with an array of articles", () => {
         return request(app)
           .get("/api/articles")
           .expect(200)
@@ -59,7 +59,7 @@ describe("app.js", () => {
             });
           });
       });
-      test("returns articles sorted by date in descending order (default case)", () => {
+      test("status:200, responds with articles sorted by date in descending order (default case)", () => {
         return request(app)
           .get("/api/articles")
           .expect(200)
@@ -74,7 +74,7 @@ describe("app.js", () => {
   });
   describe("/api/articles/:article_id", () => {
     describe("GET", () => {
-      test("status:200, returns an article object when passed a valid article_id", () => {
+      test("status:200, responds with an article object when passed a valid article_id", () => {
         return request(app)
           .get("/api/articles/1")
           .expect(200)
@@ -92,7 +92,7 @@ describe("app.js", () => {
             );
           });
       });
-      test("status:200, also returns key of comments_count with value of how many comments an article has", () => {
+      test("status:200, also responds with key of comments_count with value of how many comments an article has", () => {
         return request(app)
           .get("/api/articles/1")
           .expect(200)
@@ -106,7 +106,7 @@ describe("app.js", () => {
             }
           );
       });
-      test("status:400, returns error message when passed an invalid article_id", () => {
+      test("status:400, responds with error message when passed an invalid article_id", () => {
         return request(app)
           .get("/api/articles/seven';-- yo")
           .expect(400)
@@ -118,7 +118,7 @@ describe("app.js", () => {
             );
           });
       });
-      test("status:404, returns article not found when passed non-existent article_id", () => {
+      test("status:404, responds with article not found when passed non-existent article_id", () => {
         return request(app)
           .get("/api/articles/1688")
           .expect(404)
@@ -132,7 +132,7 @@ describe("app.js", () => {
       });
     });
     describe("PATCH", () => {
-      test("status:200, updates the correct article_id with the amount of votes entered and returns updated article object", () => {
+      test("status:200, updates the correct article_id with the amount of votes entered and responds with updated article object", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: 100 })
@@ -151,7 +151,7 @@ describe("app.js", () => {
             );
           });
       });
-      test("status:400, returns invalid input when passed invalid article_id", () => {
+      test("status:400, responds with invalid input when passed invalid article_id", () => {
         return request(app)
           .patch("/api/articles/eight")
           .send({ inc_votes: 100 })
@@ -164,7 +164,7 @@ describe("app.js", () => {
             );
           });
       });
-      test("status:400, returns invalid input when passed invalid patch body (invalid value)", () => {
+      test("status:400, responds with invalid input when passed invalid patch body (invalid value)", () => {
         return request(app)
           .patch("/api/articles/eight")
           .send({ inc_votes: "not-a-valid-value" })
@@ -177,7 +177,7 @@ describe("app.js", () => {
             );
           });
       });
-      test("status:400, returns invalid input when passed invalid patch body (invalid key)", () => {
+      test("status:400, responds with invalid input when passed invalid patch body (invalid key)", () => {
         return request(app)
           .patch("/api/articles/eight")
           .send({ "not a valid key": 100 })
@@ -190,10 +190,66 @@ describe("app.js", () => {
             );
           });
       });
-      test("status:404, returns article not found when passed non-existent article_id", () => {
+      test("status:404, responds with article not found when passed non-existent article_id", () => {
         return request(app)
           .patch("/api/articles/1688")
           .send({ inc_votes: 100 })
+          .expect(404)
+          .then(({ body }) => {
+            expect(body).toEqual(
+              expect.objectContaining({
+                msg: "Article not found",
+              })
+            );
+          });
+      });
+    });
+  });
+  describe.only("/api/articles/:article_id/comments", () => {
+    describe("GET", () => {
+      test("status:200, responds with an array of comment objects for the given article_id", () => {
+        return request(app)
+          .get("/api/articles/1/comments")
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).toHaveLength(11);
+            comments.forEach((comment) => {
+              expect(comment).toEqual(
+                expect.objectContaining({
+                  comment_id: expect.any(Number),
+                  body: expect.any(String),
+                  article_id: 1,
+                  author: expect.any(String),
+                  votes: expect.any(Number),
+                  created_at: expect.any(String),
+                })
+              );
+            });
+          });
+      });
+      test("status:200, responds with an empty array when no comments exist for given article_id", () => {
+        return request(app)
+          .get("/api/articles/2/comments")
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).toEqual([]);
+          });
+      });
+      test("status:400, responds with invalid input when passed invalid article_id", () => {
+        return request(app)
+          .get("/api/articles/invalid/comments")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body).toEqual(
+              expect.objectContaining({
+                msg: "Invalid input",
+              })
+            );
+          });
+      });
+      test("status:404, responds with article not found when passed non-existent article_id", () => {
+        return request(app)
+          .get("/api/articles/1688/comments")
           .expect(404)
           .then(({ body }) => {
             expect(body).toEqual(
