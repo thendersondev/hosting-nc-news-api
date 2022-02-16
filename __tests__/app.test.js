@@ -70,6 +70,20 @@ describe("app.js", () => {
             });
           });
       });
+      test("status:200, response also has key of comment_count with value of how many comments each article has", () => {
+        return request(app)
+          .get("/api/articles")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            articles.forEach((article) => {
+              expect(article).toEqual(
+                expect.objectContaining({
+                  comment_count: expect.any(String),
+                })
+              );
+            });
+          });
+      });
     });
   });
   describe("/api/articles/:article_id", () => {
@@ -92,7 +106,7 @@ describe("app.js", () => {
             );
           });
       });
-      test("status:200, also responds with key of comments_count with value of how many comments an article has", () => {
+      test("status:200, response also has key of comment_count with value of how many comments an article has", () => {
         return request(app)
           .get("/api/articles/1")
           .expect(200)
@@ -205,7 +219,7 @@ describe("app.js", () => {
       });
     });
   });
-  describe.only("/api/articles/:article_id/comments", () => {
+  describe("/api/articles/:article_id/comments", () => {
     describe("GET", () => {
       test("status:200, responds with an array of comment objects for the given article_id", () => {
         return request(app)
