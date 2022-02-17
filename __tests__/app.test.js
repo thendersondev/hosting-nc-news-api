@@ -274,5 +274,27 @@ describe("app.js", () => {
           });
       });
     });
+    describe.only("POST", () => {
+      test("status:201, responds with posted comment and correctly updates the comments database", () => {
+        return request(app)
+          .post("/api/articles/1/comments")
+          .send({
+            username: "icellusedkars",
+            body: "I love cheese, especially stinking bishop cheese on toast. Bocconcini hard cheese babybel cheese on toast smelly cheese roquefort everyone loves bocconcini. Stinking bishop melted cheese babybel cauliflower cheese bocconcini manchego cheese and wine danish fontina. Pecorino danish fontina manchego squirty cheese cheesy feet parmesan.",
+          })
+          .expect(201)
+          .then(({ body: comment }) => {
+            expect(comment).toEqual(
+              expect.objectContaining({
+                body: "I love cheese, especially stinking bishop cheese on toast. Bocconcini hard cheese babybel cheese on toast smelly cheese roquefort everyone loves bocconcini. Stinking bishop melted cheese babybel cauliflower cheese bocconcini manchego cheese and wine danish fontina. Pecorino danish fontina manchego squirty cheese cheesy feet parmesan.",
+                votes: 0,
+                author: "icellusedkars",
+                article_id: 1,
+                created_at: expect.any(String),
+              })
+            );
+          });
+      });
+    });
   });
 });

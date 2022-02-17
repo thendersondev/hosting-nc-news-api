@@ -17,6 +17,7 @@ const {
 const { getUsers } = require("./controllers/users-controllers");
 const {
   getCommentsByArticleId,
+  postComment,
 } = require("./controllers/comments-controllers");
 // controller requiring
 
@@ -35,6 +36,7 @@ app.get("/api/users", getUsers);
 
 // comments
 app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
+app.post("/api/articles/:article_id/comments", postComment);
 
 // errors
 app.all("/*", trigger404);
