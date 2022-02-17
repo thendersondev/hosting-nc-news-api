@@ -10,7 +10,7 @@ exports.getCommentsByArticleId = async (req, res, next) => {
 
     const [{ rows: comments }] = await Promise.all([
       fetchCommentsByArticleId(id),
-      fetchArticle(id),
+      fetchArticle(id), // will 404 if article not found
     ]);
 
     res.status(200).send({ comments });

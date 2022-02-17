@@ -145,7 +145,7 @@ describe("app.js", () => {
           });
       });
     });
-    describe("PATCH", () => {
+    describe.only("PATCH", () => {
       test("status:200, updates the correct article_id with the amount of votes entered and responds with updated article object", () => {
         return request(app)
           .patch("/api/articles/1")

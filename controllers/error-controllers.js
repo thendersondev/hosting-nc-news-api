@@ -6,7 +6,6 @@ exports.psqlErrors = (err, req, res, next) => {
   switch (err.code) {
     case "22P02":
       res.status(400).send({ msg: "Invalid input" });
-      break;
     case "23502":
       res.status(400).send({ msg: "Invalid post input" });
     case "23503":

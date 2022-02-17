@@ -31,7 +31,7 @@ exports.patchArticleById = async (req, res, next) => {
     const [article] = await Promise.all([
       updateArticleById(id, number),
       fetchArticle(id), // will 404 if article not found
-    ]); // will 400 if invalid inputs given
+    ]);
 
     res.status(200).send({ article });
   } catch (err) {
