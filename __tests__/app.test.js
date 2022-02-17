@@ -37,7 +37,7 @@ describe("app.js", () => {
     });
   });
   describe("/api/articles", () => {
-    describe.only("GET", () => {
+    describe("GET", () => {
       test("status:200, responds with an array of articles", () => {
         return request(app)
           .get("/api/articles")
@@ -73,7 +73,7 @@ describe("app.js", () => {
             });
           });
       });
-      describe.only("QUERIES", () => {
+      describe("QUERIES", () => {
         test("responds with articles sorted by date in descending order (default case)", () => {
           return request(app)
             .get("/api/articles")
@@ -155,7 +155,70 @@ describe("app.js", () => {
             });
           return Promise.all([dateAsc, authorAsc, topicDesc]);
         });
-        // test("accepts topic query, filters articles by the topic value specified", () => {});
+        test("accepts topic query, filters articles by the topic value specified", () => {
+          const mitchQuery = request(app)
+            .get("/api/articles?topic=mitch")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toHaveLength(11);
+              articles.forEach((article) => {
+                expect(article).toEqual(
+                  expect.objectContaining({
+                    article_id: expect.any(Number),
+                    title: expect.any(String),
+                    topic: "mitch",
+                    author: expect.any(String),
+                    created_at: expect.any(String),
+                    votes: expect.any(Number),
+                    comment_count: expect.any(Number),
+                  })
+                );
+              });
+            });
+          const catQuery = request(app)
+            .get("/api/articles?topic=cats")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toHaveLength(1);
+              expect(articles[0]).toEqual(
+                expect.objectContaining({
+                  article_id: 5,
+                  title: "UNCOVERED: catspiracy to bring down democracy",
+                  topic: "cats",
+                  author: "rogersop",
+                  created_at: expect.any(String),
+                  votes: 0,
+                  comment_count: 2,
+                })
+              );
+            });
+
+          return Promise.all([mitchQuery, catQuery]);
+        });
+        test("status:400, response of 'Articles can only be ordered by asc or desc' when specified order value isn't valid", () => {
+          return request(app)
+            .get("/api/articles?order=cats")
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("Articles can only be ordered asc or desc");
+            });
+        });
+        test("status:404, response of 'No articles matching query criteria' when specified values don't exist in database (sort_by and topic queries only)", () => {
+          const sortQuery = request(app)
+            .get("/api/articles?sort_by=beavis")
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("No articles found matching query criteria");
+            });
+          const topicQuery = request(app)
+            .get("/api/articles?topic=butthead")
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("No articles found matching query criteria");
+            });
+
+          return Promise.all([sortQuery, topicQuery]);
+        });
       });
     });
   });

@@ -1,19 +1,23 @@
 const db = require("../db/connection");
 
-exports.fetchAllArticles = async (sort = "created_at", order = "desc") => {
-  const validOrders = ["asc", "ASC", "desc", "DESC"];
+exports.fetchAllArticles = async (
+  sort = "created_at",
+  order = "desc",
+  topic
+) => {
+  // pulling valid topics from topics table
+  const { rows: topics } = await db.query(`SELECT slug FROM topics`);
+  const validTopics = topics.map(({ slug }) => {
+    return slug;
+  });
 
-  if (sort === "comment_count" && validOrders.includes(order)) {
-    return await db.query(`
-    SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, 
-    articles.votes, CAST(COUNT(comments.comment_id) AS int) AS comment_count
-    FROM articles
-    LEFT JOIN comments ON articles.article_id = comments.article_id
-    GROUP BY articles.article_id
-    ORDER BY COUNT(comments.comment_id) ${order};`);
+  let topicQuery = "";
+  if (validTopics.includes(topic)) {
+    topicQuery = `WHERE articles.topic = '${topic}'`;
   }
 
-  const validArticleSorts = [
+  const validOrders = ["asc", "ASC", "desc", "DESC"];
+  const validSorts = [
     "article_id",
     "title",
     "topic",
@@ -21,17 +25,54 @@ exports.fetchAllArticles = async (sort = "created_at", order = "desc") => {
     "body",
     "created_at",
     "votes",
+    "comment_count",
   ];
 
-  if (validArticleSorts.includes(sort) && validOrders.includes(order)) {
-    return await db.query(`
+  if (
+    !validSorts.includes(sort) ||
+    (!validTopics.includes(topic) && topic !== undefined)
+  ) {
+    return Promise.reject({
+      status: 404,
+      msg: "No articles found matching query criteria",
+    });
+  } else if (!validOrders.includes(order)) {
+    return Promise.reject({
+      status: 400,
+      msg: "Articles can only be ordered asc or desc",
+    });
+  }
+
+  if (sort === "comment_count" && validOrders.includes(order)) {
+    return await db.query(
+      `
     SELECT 
-    articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, 
-    articles.votes, CAST(COUNT(comments.comment_id) AS int) AS comment_count
+    articles.article_id, articles.title, articles.topic, 
+    articles.author, articles.created_at, articles.votes, 
+    CAST(COUNT(comments.comment_id) AS int) AS comment_count
+
     FROM articles
     LEFT JOIN comments ON articles.article_id = comments.article_id
+    ${topicQuery}
     GROUP BY articles.article_id
-    ORDER BY articles.${sort} ${order};`);
+    ORDER BY COUNT(comments.comment_id) ${order};`
+    );
+  }
+
+  if (validSorts.includes(sort) && validOrders.includes(order)) {
+    return await db.query(
+      `
+    SELECT 
+    articles.article_id, articles.title, articles.topic, 
+    articles.author, articles.created_at, articles.votes, 
+    CAST(COUNT(comments.comment_id) AS int) AS comment_count
+
+    FROM articles
+    LEFT JOIN comments ON articles.article_id = comments.article_id
+    ${topicQuery}
+    GROUP BY articles.article_id 
+    ORDER BY articles.${sort} ${order};`
+    );
   }
 };
 

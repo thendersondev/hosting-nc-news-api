@@ -6,12 +6,13 @@ const {
 
 exports.getArticles = async (req, res, next) => {
   try {
-    const { sort_by: sort, order } = req.query;
+    const { sort_by: sort, order, topic } = req.query;
 
-    const { rows: articles } = await fetchAllArticles(sort, order);
+    const { rows: articles } = await fetchAllArticles(sort, order, topic);
 
     res.status(200).send({ articles });
   } catch (err) {
+    console.log(err);
     next(err);
   }
 };
