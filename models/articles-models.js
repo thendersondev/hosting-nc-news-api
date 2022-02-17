@@ -1,12 +1,38 @@
 const db = require("../db/connection");
 
-exports.fetchAllArticles = async () => {
-  return await db.query(`
-  SELECT articles.*, COUNT(comments.comment_id) AS comment_count
-  FROM articles
-  LEFT JOIN comments ON articles.article_id = comments.article_id
-  GROUP BY articles.article_id
-  ORDER BY articles.created_at desc;`);
+exports.fetchAllArticles = async (sort = "created_at", order = "desc") => {
+  const validOrders = ["asc", "ASC", "desc", "DESC"];
+
+  if (sort === "comment_count" && validOrders.includes(order)) {
+    return await db.query(`
+    SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, 
+    articles.votes, CAST(COUNT(comments.comment_id) AS int) AS comment_count
+    FROM articles
+    LEFT JOIN comments ON articles.article_id = comments.article_id
+    GROUP BY articles.article_id
+    ORDER BY COUNT(comments.comment_id) ${order};`);
+  }
+
+  const validArticleSorts = [
+    "article_id",
+    "title",
+    "topic",
+    "author",
+    "body",
+    "created_at",
+    "votes",
+  ];
+
+  if (validArticleSorts.includes(sort) && validOrders.includes(order)) {
+    return await db.query(`
+    SELECT 
+    articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, 
+    articles.votes, CAST(COUNT(comments.comment_id) AS int) AS comment_count
+    FROM articles
+    LEFT JOIN comments ON articles.article_id = comments.article_id
+    GROUP BY articles.article_id
+    ORDER BY articles.${sort} ${order};`);
+  }
 };
 
 exports.fetchArticle = async (id) => {

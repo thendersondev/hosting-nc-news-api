@@ -37,7 +37,7 @@ describe("app.js", () => {
     });
   });
   describe("/api/articles", () => {
-    describe("GET", () => {
+    describe.only("GET", () => {
       test("status:200, responds with an array of articles", () => {
         return request(app)
           .get("/api/articles")
@@ -51,26 +51,15 @@ describe("app.js", () => {
                   title: expect.any(String),
                   topic: expect.any(String),
                   author: expect.any(String),
-                  body: expect.any(String),
                   created_at: expect.any(String),
                   votes: expect.any(Number),
                 })
               );
+              expect(article.hasOwnProperty("body")).toBe(false);
             });
           });
       });
-      test("status:200, responds with articles sorted by date in descending order (default case)", () => {
-        return request(app)
-          .get("/api/articles")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            expect(articles).toBeSorted({
-              key: "created_at",
-              descending: true,
-            });
-          });
-      });
-      test("status:200, response also has key of comment_count with value of how many comments each article has", () => {
+      test("status:200, response has key of comment_count with value of how many comments each article has", () => {
         return request(app)
           .get("/api/articles")
           .expect(200)
@@ -78,11 +67,95 @@ describe("app.js", () => {
             articles.forEach((article) => {
               expect(article).toEqual(
                 expect.objectContaining({
-                  comment_count: expect.any(String),
+                  comment_count: expect.any(Number),
                 })
               );
             });
           });
+      });
+      describe.only("QUERIES", () => {
+        test("responds with articles sorted by date in descending order (default case)", () => {
+          return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toBeSorted({
+                key: "created_at",
+                descending: true,
+              });
+            });
+        });
+        test("accepts sort_by query, sorts articles by any valid column", () => {
+          // testing about half of possible valid column names
+          const articleSort = request(app)
+            .get("/api/articles?sort_by=article_id")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toBeSorted({
+                key: "article_id",
+                descending: true,
+              });
+            });
+          const titleSort = request(app)
+            .get("/api/articles?sort_by=title")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toBeSorted({ key: "title", descending: true });
+            });
+          const topicSort = request(app)
+            .get("/api/articles?sort_by=author")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toBeSorted({ key: "author", descending: true });
+            });
+          const commentCountSort = request(app)
+            .get("/api/articles?sort_by=comment_count")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toBeSorted({
+                key: "comment_count",
+                descending: true,
+              });
+            });
+
+          return Promise.all([
+            articleSort,
+            titleSort,
+            topicSort,
+            commentCountSort,
+          ]);
+        });
+        test("accepts order query, sorts articles by asc or desc (defaulting to descending)", () => {
+          const dateAsc = request(app)
+            .get("/api/articles?sort_by=created_at&order=asc")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toBeSorted({
+                key: "created_at",
+                ascending: true,
+              });
+            });
+          const authorAsc = request(app)
+            .get("/api/articles?sort_by=author&order=asc")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toBeSorted({
+                key: "author",
+                ascending: true,
+              });
+            });
+          const topicDesc = request(app)
+            .get("/api/articles?sort_by=topic&order=DESC")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toBeSorted({
+                key: "topic",
+                descending: true,
+              });
+            });
+          return Promise.all([dateAsc, authorAsc, topicDesc]);
+        });
+        // test("accepts topic query, filters articles by the topic value specified", () => {});
       });
     });
   });
@@ -145,7 +218,7 @@ describe("app.js", () => {
           });
       });
     });
-    describe.only("PATCH", () => {
+    describe("PATCH", () => {
       test("status:200, updates the correct article_id with the amount of votes entered and responds with updated article object", () => {
         return request(app)
           .patch("/api/articles/1")
