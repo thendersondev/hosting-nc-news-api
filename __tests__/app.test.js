@@ -444,28 +444,27 @@ describe("app.js", () => {
             expect(msg).toBe("Invalid input");
           });
       });
-      test("status:400, responds with invalid post input when passed a post body with an invalid / missing parameter", () => {
+      test("status:400, responds with username not found when passed an unregistered username", () => {
         return request(app)
           .post("/api/articles/1/comments")
           .send({
-            usario: "icellusedkars",
+            username: "jeff",
             body: "Jaguar shark! So tell me - does it really exist? So you two dig up, dig up dinosaurs? You really think you can fly that thing? Life finds a way. Hey, you know how I'm, like, always trying to save the planet? Here's my chance. You know what? It is beets. I've crashed into a beet truck.",
           })
           .expect(400)
           .then(({ body: { msg } }) => {
-            expect(msg).toBe("Invalid post input");
+            expect(msg).toBe("Username not found");
           });
       });
-      test("status:400, responds with invalid post data type when passed a post body with incorrect parameter data type", () => {
+      test("status:400, responds with invalid post body when body is missing", () => {
         return request(app)
           .post("/api/articles/1/comments")
           .send({
-            username: 1,
-            body: "Jaguar shark! So tell me - does it really exist? So you two dig up, dig up dinosaurs? You really think you can fly that thing? Life finds a way. Hey, you know how I'm, like, always trying to save the planet? Here's my chance. You know what? It is beets. I've crashed into a beet truck.",
+            username: "icellusedkars",
           })
           .expect(400)
           .then(({ body: { msg } }) => {
-            expect(msg).toBe("Invalid post data type");
+            expect(msg).toBe("Invalid post body");
           });
       });
       test("status:404, responds with article not found when passed non-existent article_id", () => {

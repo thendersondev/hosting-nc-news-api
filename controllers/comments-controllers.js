@@ -3,6 +3,7 @@ const {
   fetchCommentsByArticleId,
   makeComment,
 } = require("../models/comments-models");
+const { fetchUser } = require("../models/users-models");
 
 exports.getCommentsByArticleId = async (req, res, next) => {
   try {
@@ -24,9 +25,11 @@ exports.postComment = async (req, res, next) => {
     const { article_id: id } = req.params;
     const { username, body } = req.body;
 
-    // check if exists, if not throw 404
-    await fetchArticle(id);
-    // Promise.all doesn't work here, makeComment has a chance of throwing a 400 "violates foreign key constraint" first
+    // check if article exists, if not throw 404
+    // check if username exists, if not throw 400
+    await Promise.all([fetchArticle(id), fetchUser(username)]);
+    // Promise.all with makeComment doesn't work here
+    // makeComment has a chance of throwing a 400 "violates foreign key constraint" first
 
     const {
       rows: [comment],
