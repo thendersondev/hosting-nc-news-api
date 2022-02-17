@@ -274,8 +274,8 @@ describe("app.js", () => {
           });
       });
     });
-    describe.only("POST", () => {
-      test("status:201, responds with posted comment and correctly updates the comments database", () => {
+    describe("POST", () => {
+      test("status:201, responds with posted comment", () => {
         return request(app)
           .post("/api/articles/1/comments")
           .send({
@@ -291,8 +291,57 @@ describe("app.js", () => {
                 author: "icellusedkars",
                 article_id: 1,
                 created_at: expect.any(String),
+                comment_id: 19,
               })
             );
+          });
+      });
+      test("status:400, responds with invalid input with post attempt to an invalid article_id", () => {
+        return request(app)
+          .post("/api/articles/xzibit/comments")
+          .send({
+            username: "icellusedkars",
+            body: "Checkmate... Did he just throw my cat out of the window? You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager? I gave it a cold? I gave it a virus. A computer virus. Yeah, but John, if The Pirates of the Caribbean breaks down, the pirates don’t eat the tourists.",
+          })
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("Invalid input");
+          });
+      });
+      test("status:400, responds with invalid post input when passed a post body with an invalid / missing parameter", () => {
+        return request(app)
+          .post("/api/articles/1/comments")
+          .send({
+            usario: "icellusedkars",
+            body: "Jaguar shark! So tell me - does it really exist? So you two dig up, dig up dinosaurs? You really think you can fly that thing? Life finds a way. Hey, you know how I'm, like, always trying to save the planet? Here's my chance. You know what? It is beets. I've crashed into a beet truck.",
+          })
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("Invalid post input");
+          });
+      });
+      test("status:400, responds with invalid post data type when passed a post body with incorrect parameter data type", () => {
+        return request(app)
+          .post("/api/articles/1/comments")
+          .send({
+            username: 1,
+            body: "Jaguar shark! So tell me - does it really exist? So you two dig up, dig up dinosaurs? You really think you can fly that thing? Life finds a way. Hey, you know how I'm, like, always trying to save the planet? Here's my chance. You know what? It is beets. I've crashed into a beet truck.",
+          })
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("Invalid post data type");
+          });
+      });
+      test("status:404, responds with article not found when passed non-existent article_id", () => {
+        return request(app)
+          .post("/api/articles/1688/comments")
+          .send({
+            username: "icellusedkars",
+            body: "Hey, you know how I'm, like, always trying to save the planet? Here's my chance. Jaguar shark! So tell me - does it really exist? Did he just throw my cat out of the window? Life finds a way. Life finds a way. Hey, take a look at the earthlings. Goodbye!",
+          })
+          .expect(404)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("Article not found");
           });
       });
     });
