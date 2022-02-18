@@ -1,57 +1,56 @@
 const db = require("../db/connection");
-const { fetchTopics } = require("./topics-models");
+const { checkIfExists } = require("./check-exists.model");
 
 exports.fetchAllArticles = async (
   sort = "created_at",
   order = "desc",
   topic
 ) => {
-  // pulling valid topics from topics table
-  const { rows: topics } = await fetchTopics();
-  const validTopics = topics.map(({ slug }) => {
-    return slug;
-  });
+  const articleCheck = await checkIfExists("articles", sort);
+  switch (sort) {
+    case "comment_count":
+      break;
+    default:
+      if (!articleCheck) {
+        return Promise.reject({
+          status: 404,
+          msg: "No articles found matching query criteria",
+        });
+      }
+  }
 
-  let topicQuery = "";
-  if (validTopics.includes(topic)) {
-    topicQuery = `WHERE articles.topic = '${topic}'`;
+  const topicCheck = await checkIfExists("topics", topic, "slug");
+  switch (topic) {
+    case undefined:
+      break;
+    default:
+      if (!topicCheck) {
+        return Promise.reject({
+          status: 404,
+          msg: "No articles found matching query criteria",
+        });
+      }
   }
 
   const validOrders = ["asc", "ASC", "desc", "DESC"];
-  const validSorts = [
-    "article_id",
-    "title",
-    "topic",
-    "author",
-    "body",
-    "created_at",
-    "votes",
-    "comment_count",
-  ];
-
-  if (
-    !validSorts.includes(sort) ||
-    (!validTopics.includes(topic) && topic !== undefined)
-  ) {
-    return Promise.reject({
-      status: 404,
-      msg: "No articles found matching query criteria",
-    });
-  } else if (!validOrders.includes(order)) {
-    return Promise.reject({
-      status: 400,
-      msg: "Articles can only be ordered asc or desc",
-    });
+  switch (validOrders.includes(order)) {
+    case false:
+      return Promise.reject({
+        status: 400,
+        msg: "Articles can only be ordered asc or desc",
+      });
   }
 
-  if (validSorts.includes(sort) && validOrders.includes(order)) {
-    const orderQuery =
-      sort === "comment_count"
-        ? `ORDER BY COUNT(comments.comment_id) ${order};`
-        : `ORDER BY articles.${sort} ${order};`;
+  const topicQuery =
+    topic === undefined ? "" : `WHERE articles.topic = '${topic}'`;
 
-    return await db.query(
-      `
+  const orderQuery =
+    sort === "comment_count"
+      ? `ORDER BY COUNT(comments.comment_id) ${order};`
+      : `ORDER BY articles.${sort} ${order};`;
+
+  return await db.query(
+    `
     SELECT 
     articles.article_id, articles.title, articles.topic, 
     articles.author, articles.created_at, articles.votes, 
@@ -62,8 +61,7 @@ exports.fetchAllArticles = async (
     ${topicQuery}
     GROUP BY articles.article_id 
     ${orderQuery};`
-    );
-  }
+  );
 };
 
 exports.fetchArticle = async (id) => {

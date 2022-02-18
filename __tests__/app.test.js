@@ -37,8 +37,8 @@ describe("app.js", () => {
       });
     });
   });
-  describe("/api/articles", () => {
-    describe("GET", () => {
+  describe.only("/api/articles", () => {
+    describe.only("GET", () => {
       test("status:200, responds with an array of articles", () => {
         return request(app)
           .get("/api/articles")
@@ -74,7 +74,7 @@ describe("app.js", () => {
             });
           });
       });
-      describe.only("QUERIES", () => {
+      describe("QUERIES", () => {
         test("responds with articles sorted by date in descending order (default case)", () => {
           return request(app)
             .get("/api/articles")
@@ -483,7 +483,7 @@ describe("app.js", () => {
       });
     });
   });
-  describe.only("checkExists utility model", () => {
+  describe("checkExists utility model", () => {
     test("Returns true if a given property exists in a given table in the database", () => {
       const topicCheck = checkIfExists("topics", "slug").then((result) => {
         expect(result).toBe(true);
