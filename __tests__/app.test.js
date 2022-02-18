@@ -3,6 +3,7 @@ const request = require("supertest");
 const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data");
 const db = require("../db/connection");
+const { checkIfExists } = require("../models/check-exists.model");
 
 afterAll(() => db.end());
 beforeEach(() => seed(data));
@@ -425,6 +426,7 @@ describe("app.js", () => {
                 body: "I love cheese, especially stinking bishop cheese on toast. Bocconcini hard cheese babybel cheese on toast smelly cheese roquefort everyone loves bocconcini. Stinking bishop melted cheese babybel cauliflower cheese bocconcini manchego cheese and wine danish fontina. Pecorino danish fontina manchego squirty cheese cheesy feet parmesan.",
                 votes: 0,
                 author: "icellusedkars",
+
                 article_id: 1,
                 created_at: expect.any(String),
                 comment_id: 19,
@@ -478,6 +480,18 @@ describe("app.js", () => {
           .then(({ body: { msg } }) => {
             expect(msg).toBe("Article not found");
           });
+      });
+    });
+  });
+  describe("checkExists utility model", () => {
+    test("Returns true if a given property exists in a given table in the database", () => {
+      return checkIfExists("topics", "slug", "cats").then((result) => {
+        expect(result).toBe(true);
+      });
+    });
+    test("Returns false if given a property that doesn't exist in a given table", () => {
+      return checkIfExists("topics", "slug", "aliens").then((result) => {
+        expect(result).toBe(false);
       });
     });
   });
