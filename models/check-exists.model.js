@@ -10,7 +10,12 @@ exports.checkIfExists = async (table, check, column) => {
   if (column === undefined) {
     const keys = Object.keys(rows[0]);
 
-    return keys.includes(check)
+    let coercedCheck = check;
+    if (!isNaN(+check)) {
+      coercedCheck = +check;
+    }
+
+    return keys.includes(coercedCheck)
       ? true
       : Promise.reject({
           status: 404,
@@ -23,7 +28,12 @@ exports.checkIfExists = async (table, check, column) => {
       })
       .flat();
 
-    return values.includes(check)
+    let coercedCheck = check;
+    if (!isNaN(+check)) {
+      coercedCheck = +check;
+    }
+
+    return values.includes(coercedCheck)
       ? true
       : Promise.reject({
           status: 404,

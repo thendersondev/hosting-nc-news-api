@@ -204,18 +204,18 @@ describe("app.js", () => {
               expect(msg).toBe("Articles can only be ordered asc or desc");
             });
         });
-        test("status:404, response of 'No articles matching query criteria' when specified values don't exist in database (sort_by and topic queries only)", () => {
+        test("status:404, response of 'article x not found' when specified values don't exist in database (sort_by and topic queries only)", () => {
           const sortQuery = request(app)
             .get("/api/articles?sort_by=beavis")
             .expect(404)
             .then(({ body: { msg } }) => {
-              expect(msg).toBe("No articles found matching query criteria");
+              expect(msg).toBe("article: beavis not found");
             });
           const topicQuery = request(app)
             .get("/api/articles?topic=butthead")
             .expect(404)
             .then(({ body: { msg } }) => {
-              expect(msg).toBe("No articles found matching query criteria");
+              expect(msg).toBe("topic: butthead not found");
             });
 
           return Promise.all([sortQuery, topicQuery]);
