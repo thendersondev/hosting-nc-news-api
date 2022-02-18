@@ -483,14 +483,14 @@ describe("app.js", () => {
       });
     });
   });
-  describe("checkExists utility model", () => {
+  describe.only("checkExists utility model", () => {
     test("Returns true if a given property exists in a given table in the database", () => {
-      return checkIfExists("topics", "slug", "cats").then((result) => {
+      return checkIfExists("topics", "cats").then((result) => {
         expect(result).toBe(true);
       });
     });
     test("Returns false if given a property that doesn't exist in a given table", () => {
-      return checkIfExists("topics", "slug", "aliens").then((result) => {
+      return checkIfExists("topics", "aliens").then((result) => {
         expect(result).toBe(false);
       });
     });
