@@ -10,7 +10,12 @@ exports.checkIfExists = async (table, check, column) => {
   if (column === undefined) {
     const keys = Object.keys(rows[0]);
 
-    return keys.includes(check);
+    return keys.includes(check)
+      ? true
+      : Promise.reject({
+          status: 404,
+          msg: `${table.slice(0, table.length - 1)}: ${check} not found`,
+        });
   } else {
     const values = rows
       .map((entry) => {
@@ -18,6 +23,11 @@ exports.checkIfExists = async (table, check, column) => {
       })
       .flat();
 
-    return values.includes(check);
+    return values.includes(check)
+      ? true
+      : Promise.reject({
+          status: 404,
+          msg: `${table.slice(0, table.length - 1)}: ${check} not found`,
+        });
   }
 };

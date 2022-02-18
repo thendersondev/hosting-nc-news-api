@@ -37,8 +37,8 @@ describe("app.js", () => {
       });
     });
   });
-  describe.only("/api/articles", () => {
-    describe.only("GET", () => {
+  describe("/api/articles", () => {
+    describe("GET", () => {
       test("status:200, responds with an array of articles", () => {
         return request(app)
           .get("/api/articles")
@@ -483,7 +483,7 @@ describe("app.js", () => {
       });
     });
   });
-  describe("checkExists utility model", () => {
+  describe.only("checkExists utility model", () => {
     test("Returns true if a given property exists in a given table in the database", () => {
       const topicCheck = checkIfExists("topics", "slug").then((result) => {
         expect(result).toBe(true);
@@ -496,13 +496,31 @@ describe("app.js", () => {
 
       return Promise.all([topicCheck, articleIdCheck]);
     });
-    test("Returns false if given a property that doesn't exist in a given table", () => {
-      const topicCheck = checkIfExists("topics", "aliens").then((result) => {
-        expect(result).toBe(false);
-      });
-      const articleIdCheck = checkIfExists("articles", 100).then((result) => {
-        expect(result).toBe(false);
-      });
+    test("Returns of {status: 404, msg: property not found } if given a property that doesn't exist in a given table", () => {
+      const topicCheck = checkIfExists("topics", "aliens")
+        .then((result) => {
+          expect(result).toBe(undefined);
+        })
+        .catch((err) => {
+          expect(err).toEqual(
+            expect.objectContaining({
+              status: 404,
+              msg: "topic: aliens not found",
+            })
+          );
+        });
+      const articleIdCheck = checkIfExists("articles", 100)
+        .then((result) => {
+          expect(result).toBe(undefined);
+        })
+        .catch((err) => {
+          expect(err).toEqual(
+            expect.objectContaining({
+              status: 404,
+              msg: "article: 100 not found",
+            })
+          );
+        });
 
       return Promise.all([topicCheck, articleIdCheck]);
     });
@@ -516,9 +534,18 @@ describe("app.js", () => {
         "articles",
         100,
         "article_id"
-      ).then((result) => {
-        expect(result).toBe(false);
-      });
+      )
+        .then((result) => {
+          expect(result).toBe(undefined);
+        })
+        .catch((err) => {
+          expect(err).toEqual(
+            expect.objectContaining({
+              status: 404,
+              msg: "article: 100 not found",
+            })
+          );
+        });
 
       return Promise.all([articleIdCheck, articleIdCheckWithColumn]);
     });

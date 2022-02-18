@@ -65,6 +65,15 @@ exports.fetchAllArticles = async (
 };
 
 exports.fetchArticle = async (id) => {
+  const articleCheck = await checkIfExists("articles", id, "article_id");
+  switch (articleCheck) {
+    case false:
+      return Promise.reject({
+        status: 404,
+        msg: "Article not found",
+      });
+  }
+
   const { rows } = await db.query(
     `SELECT articles.*, COUNT(comments.comment_id) AS comment_count
     FROM articles
@@ -73,16 +82,20 @@ exports.fetchArticle = async (id) => {
     GROUP BY articles.article_id;`,
     [id]
   );
-  // if article doesn't exist throw 404
-  if (rows.length === 0) {
-    return Promise.reject({ status: 404, msg: "Article not found" });
-  } else {
-    // else return article
-    return rows[0];
-  }
+
+  return rows[0];
 };
 
 exports.updateArticleById = async (id, number) => {
+  const articleCheck = await checkIfExists("articles", id, "article_id");
+  switch (articleCheck) {
+    case false:
+      return Promise.reject({
+        status: 404,
+        msg: "Article not found",
+      });
+  }
+
   const { rows } = await db.query(
     `
       UPDATE articles 
