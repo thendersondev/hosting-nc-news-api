@@ -20,9 +20,13 @@ const {
   postComment,
   deleteComment,
 } = require("./controllers/comments-controllers");
+const { getApi } = require("./controllers/api-controller");
 // controller requiring
 
 app.use(express.json());
+
+// api
+app.get("/api", getApi);
 
 // topics
 app.get("/api/topics", getTopics);
