@@ -484,6 +484,34 @@ describe("app.js", () => {
       });
     });
   });
+  describe("/api/comments/:comment_id", () => {
+    describe("DELETE", () => {
+      test("status:204, empty response body", () => {
+        return request(app)
+          .delete("/api/comments/1")
+          .expect(204)
+          .then(({ body }) => {
+            expect(body).toEqual({});
+          });
+      });
+      test("status:400, returns invalid input when passsed an invalid comment_id", () => {
+        return request(app)
+          .delete("/api/comments/jeff-bezos")
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toEqual("Invalid input");
+          });
+      });
+      test("status:404, returns comment: x not found when passed a non-existent comment_id", () => {
+        return request(app)
+          .delete("/api/comments/1688")
+          .expect(404)
+          .then(({ body: { msg } }) => {
+            expect(msg).toEqual("comment: 1688 not found");
+          });
+      });
+    });
+  });
   describe("checkExists utility model", () => {
     test("Returns true if a given property exists in a given table in the database", () => {
       const topicCheck = checkIfExists("topics", "slug").then((result) => {
