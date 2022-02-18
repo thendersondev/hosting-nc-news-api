@@ -26,3 +26,13 @@ exports.makeComment = async (id, username, body) => {
   );
   return rows;
 };
+
+exports.cancelComment = async (id) => {
+  await checkIfExists("comments", id, "comment_id");
+
+  const { rows } = await db.query(
+    `DELETE FROM comments WHERE comment_id = $1 RETURNING *;`,
+    [id]
+  );
+  return rows[0];
+};
