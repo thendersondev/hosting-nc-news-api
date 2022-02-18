@@ -2,9 +2,9 @@
   "name": "be-nc-news",
   "version": "1.0.0",
   "description": "bc-nc-news",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start": "node listen.js",
+    "start": "node app.js",
     "setup-dbs": "psql -f ./db/setup.sql",
     "seed:prod": "NODE_ENV=production DATABASE_URL=$(heroku config:get DATABASE_URL) npm run seed",
     "seed": "node ./db/seeds/run-seed.js",

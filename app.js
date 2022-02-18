@@ -50,4 +50,8 @@ app.use(psqlErrors);
 app.use(customErrors);
 app.use(trigger500);
 
+const { PORT = 9090 } = process.env;
+
+app.listen(PORT, () => console.log(`Listening on ${PORT}...`));
+
 module.exports = app;
