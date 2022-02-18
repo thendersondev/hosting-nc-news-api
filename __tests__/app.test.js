@@ -276,7 +276,7 @@ describe("app.js", () => {
           .then(({ body }) => {
             expect(body).toEqual(
               expect.objectContaining({
-                msg: "Article not found",
+                msg: "article: 1688 not found",
               })
             );
           });
@@ -317,7 +317,7 @@ describe("app.js", () => {
       });
       test("status:400, responds with invalid input when passed invalid patch body (invalid value)", () => {
         return request(app)
-          .patch("/api/articles/eight")
+          .patch("/api/articles/8")
           .send({ inc_votes: "not-a-valid-value" })
           .expect(400)
           .then(({ body }) => {
@@ -330,7 +330,7 @@ describe("app.js", () => {
       });
       test("status:400, responds with invalid input when passed invalid patch body (invalid key)", () => {
         return request(app)
-          .patch("/api/articles/eight")
+          .patch("/api/articles/8")
           .send({ "not a valid key": 100 })
           .expect(400)
           .then(({ body }) => {
@@ -349,7 +349,7 @@ describe("app.js", () => {
           .then(({ body }) => {
             expect(body).toEqual(
               expect.objectContaining({
-                msg: "Article not found",
+                msg: "article: 1688 not found",
               })
             );
           });
@@ -405,7 +405,7 @@ describe("app.js", () => {
           .then(({ body }) => {
             expect(body).toEqual(
               expect.objectContaining({
-                msg: "Article not found",
+                msg: "article: 1688 not found",
               })
             );
           });
@@ -446,19 +446,8 @@ describe("app.js", () => {
             expect(msg).toBe("Invalid input");
           });
       });
-      test("status:400, responds with username not found when passed an unregistered username", () => {
-        return request(app)
-          .post("/api/articles/1/comments")
-          .send({
-            username: "jeff",
-            body: "Jaguar shark! So tell me - does it really exist? So you two dig up, dig up dinosaurs? You really think you can fly that thing? Life finds a way. Hey, you know how I'm, like, always trying to save the planet? Here's my chance. You know what? It is beets. I've crashed into a beet truck.",
-          })
-          .expect(400)
-          .then(({ body: { msg } }) => {
-            expect(msg).toBe("Username not found");
-          });
-      });
-      test("status:400, responds with invalid post body when body is missing", () => {
+
+      test("status:400, responds with invalid input when body is missing", () => {
         return request(app)
           .post("/api/articles/1/comments")
           .send({
@@ -466,7 +455,19 @@ describe("app.js", () => {
           })
           .expect(400)
           .then(({ body: { msg } }) => {
-            expect(msg).toBe("Invalid post body");
+            expect(msg).toBe("Invalid input");
+          });
+      });
+      test("status:404, responds with username not found when passed an unregistered username", () => {
+        return request(app)
+          .post("/api/articles/1/comments")
+          .send({
+            username: "jeff",
+            body: "Jaguar shark! So tell me - does it really exist? So you two dig up, dig up dinosaurs? You really think you can fly that thing? Life finds a way. Hey, you know how I'm, like, always trying to save the planet? Here's my chance. You know what? It is beets. I've crashed into a beet truck.",
+          })
+          .expect(404)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("user: jeff not found");
           });
       });
       test("status:404, responds with article not found when passed non-existent article_id", () => {
@@ -478,12 +479,12 @@ describe("app.js", () => {
           })
           .expect(404)
           .then(({ body: { msg } }) => {
-            expect(msg).toBe("Article not found");
+            expect(msg).toBe("article: 1688 not found");
           });
       });
     });
   });
-  describe.only("checkExists utility model", () => {
+  describe("checkExists utility model", () => {
     test("Returns true if a given property exists in a given table in the database", () => {
       const topicCheck = checkIfExists("topics", "slug").then((result) => {
         expect(result).toBe(true);

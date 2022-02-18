@@ -6,30 +6,20 @@ exports.fetchAllArticles = async (
   order = "desc",
   topic
 ) => {
-  const articleCheck = await checkIfExists("articles", sort);
   switch (sort) {
     case "comment_count":
+      // comment_count is an exception
       break;
     default:
-      if (!articleCheck) {
-        return Promise.reject({
-          status: 404,
-          msg: "No articles found matching query criteria",
-        });
-      }
+      await checkIfExists("articles", sort);
   }
 
-  const topicCheck = await checkIfExists("topics", topic, "slug");
   switch (topic) {
     case undefined:
+      // undefined is an exception
       break;
     default:
-      if (!topicCheck) {
-        return Promise.reject({
-          status: 404,
-          msg: "No articles found matching query criteria",
-        });
-      }
+      await checkIfExists("topics", topic, "slug");
   }
 
   const validOrders = ["asc", "ASC", "desc", "DESC"];
@@ -65,14 +55,7 @@ exports.fetchAllArticles = async (
 };
 
 exports.fetchArticle = async (id) => {
-  const articleCheck = await checkIfExists("articles", id, "article_id");
-  switch (articleCheck) {
-    case false:
-      return Promise.reject({
-        status: 404,
-        msg: "Article not found",
-      });
-  }
+  await checkIfExists("articles", id, "article_id");
 
   const { rows } = await db.query(
     `SELECT articles.*, COUNT(comments.comment_id) AS comment_count
@@ -82,19 +65,11 @@ exports.fetchArticle = async (id) => {
     GROUP BY articles.article_id;`,
     [id]
   );
-
   return rows[0];
 };
 
 exports.updateArticleById = async (id, number) => {
-  const articleCheck = await checkIfExists("articles", id, "article_id");
-  switch (articleCheck) {
-    case false:
-      return Promise.reject({
-        status: 404,
-        msg: "Article not found",
-      });
-  }
+  await checkIfExists("articles", id, "article_id");
 
   const { rows } = await db.query(
     `

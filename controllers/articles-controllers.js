@@ -12,7 +12,6 @@ exports.getArticles = async (req, res, next) => {
 
     res.status(200).send({ articles });
   } catch (err) {
-    console.log(err);
     next(err);
   }
 };
@@ -34,10 +33,7 @@ exports.patchArticleById = async (req, res, next) => {
     const { inc_votes: number } = req.body;
     const { article_id: id } = req.params;
 
-    const [article] = await Promise.all([
-      updateArticleById(id, number),
-      fetchArticle(id), // will 404 if article not found
-    ]);
+    const article = await updateArticleById(id, number);
 
     res.status(200).send({ article });
   } catch (err) {
