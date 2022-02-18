@@ -168,6 +168,26 @@ describe("app.js", () => {
       });
     });
   });
+  describe("/api/users", () => {
+    describe("GET", () => {
+      test("status:200, responds with an array of users", () => {
+        return request(app)
+          .get("/api/users")
+          .expect(200)
+          .then(({ body: { users } }) => {
+            users.forEach((user) => {
+              expect(user).toEqual(
+                expect.objectContaining({
+                  username: expect.any(String),
+                  name: expect.any(String),
+                  avatar_url: expect.any(String),
+                })
+              );
+            });
+          });
+      });
+    });
+  });
   describe("/api/articles", () => {
     describe("GET", () => {
       test("status:200, responds with an array of articles", () => {
