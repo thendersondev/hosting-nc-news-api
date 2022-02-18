@@ -1,14 +1,14 @@
 const db = require("../db/connection");
 const format = require("pg-format");
 
-exports.checkIfExists = async (table, check) => {
+exports.checkIfExists = async (table, check, column) => {
   //checks if something exists in a specified table
-  const keysQuery = format("SELECT * FROM %I;", table);
-  const { rows } = await db.query(keysQuery);
+  const columnQuery = format("SELECT * FROM %I;", table);
+  const { rows } = await db.query(columnQuery);
 
   const values = rows
     .map((entry) => {
-      return Object.values(entry);
+      return column === undefined ? Object.values(entry) : entry[column];
     })
     .flat();
 

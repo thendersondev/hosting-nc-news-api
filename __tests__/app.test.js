@@ -483,16 +483,40 @@ describe("app.js", () => {
       });
     });
   });
-  describe.only("checkExists utility model", () => {
+  describe("checkExists utility model", () => {
     test("Returns true if a given property exists in a given table in the database", () => {
-      return checkIfExists("topics", "cats").then((result) => {
+      const topicCheck = checkIfExists("topics", "cats").then((result) => {
         expect(result).toBe(true);
       });
+      const articleIdCheck = checkIfExists("articles", 1).then((result) => {
+        expect(result).toBe(true);
+      });
+
+      return Promise.all([topicCheck, articleIdCheck]);
     });
     test("Returns false if given a property that doesn't exist in a given table", () => {
-      return checkIfExists("topics", "aliens").then((result) => {
+      const topicCheck = checkIfExists("topics", "aliens").then((result) => {
         expect(result).toBe(false);
       });
+      const articleIdCheck = checkIfExists("articles", 1000).then((result) => {
+        expect(result).toBe(false);
+      });
+
+      return Promise.all([topicCheck, articleIdCheck]);
+    });
+    test("Takes an optional third parameter (column) to allow for searching of only the specified column", () => {
+      const articleIdCheck = checkIfExists("articles", 100).then((result) => {
+        expect(result).toBe(true);
+      });
+      const articleIdCheckWithColumn = checkIfExists(
+        "articles",
+        100,
+        "article_id"
+      ).then((result) => {
+        expect(result).toBe(false);
+      });
+
+      return Promise.all([articleIdCheck, articleIdCheckWithColumn]);
     });
   });
 });
