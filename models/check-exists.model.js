@@ -6,11 +6,17 @@ exports.checkIfExists = async (table, check, column) => {
   const columnQuery = format("SELECT * FROM %I;", table);
   const { rows } = await db.query(columnQuery);
 
-  const values = rows
-    .map((entry) => {
-      return column === undefined ? Object.values(entry) : entry[column];
-    })
-    .flat();
+  if (column === undefined) {
+    const keys = Object.keys(rows[0]);
 
-  return values.includes(check);
+    return keys.includes(check);
+  } else {
+    const values = rows
+      .map((entry) => {
+        return entry[column];
+      })
+      .flat();
+
+    return values.includes(check);
+  }
 };

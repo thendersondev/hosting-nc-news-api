@@ -74,7 +74,7 @@ describe("app.js", () => {
             });
           });
       });
-      describe("QUERIES", () => {
+      describe.only("QUERIES", () => {
         test("responds with articles sorted by date in descending order (default case)", () => {
           return request(app)
             .get("/api/articles")
@@ -483,14 +483,16 @@ describe("app.js", () => {
       });
     });
   });
-  describe("checkExists utility model", () => {
+  describe.only("checkExists utility model", () => {
     test("Returns true if a given property exists in a given table in the database", () => {
-      const topicCheck = checkIfExists("topics", "cats").then((result) => {
+      const topicCheck = checkIfExists("topics", "slug").then((result) => {
         expect(result).toBe(true);
       });
-      const articleIdCheck = checkIfExists("articles", 1).then((result) => {
-        expect(result).toBe(true);
-      });
+      const articleIdCheck = checkIfExists("articles", "topic").then(
+        (result) => {
+          expect(result).toBe(true);
+        }
+      );
 
       return Promise.all([topicCheck, articleIdCheck]);
     });
@@ -498,16 +500,18 @@ describe("app.js", () => {
       const topicCheck = checkIfExists("topics", "aliens").then((result) => {
         expect(result).toBe(false);
       });
-      const articleIdCheck = checkIfExists("articles", 1000).then((result) => {
+      const articleIdCheck = checkIfExists("articles", 100).then((result) => {
         expect(result).toBe(false);
       });
 
       return Promise.all([topicCheck, articleIdCheck]);
     });
     test("Takes an optional third parameter (column) to allow for searching of only the specified column", () => {
-      const articleIdCheck = checkIfExists("articles", 100).then((result) => {
-        expect(result).toBe(true);
-      });
+      const articleIdCheck = checkIfExists("articles", 100, "votes").then(
+        (result) => {
+          expect(result).toBe(true);
+        }
+      );
       const articleIdCheckWithColumn = checkIfExists(
         "articles",
         100,
