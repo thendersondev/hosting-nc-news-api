@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const { fetchTopics } = require("./topics-models");
 
 exports.fetchAllArticles = async (
   sort = "created_at",
@@ -6,7 +7,7 @@ exports.fetchAllArticles = async (
   topic
 ) => {
   // pulling valid topics from topics table
-  const { rows: topics } = await db.query(`SELECT slug FROM topics`);
+  const { rows: topics } = await fetchTopics();
   const validTopics = topics.map(({ slug }) => {
     return slug;
   });
@@ -43,23 +44,12 @@ exports.fetchAllArticles = async (
     });
   }
 
-  if (sort === "comment_count" && validOrders.includes(order)) {
-    return await db.query(
-      `
-    SELECT 
-    articles.article_id, articles.title, articles.topic, 
-    articles.author, articles.created_at, articles.votes, 
-    CAST(COUNT(comments.comment_id) AS int) AS comment_count
-
-    FROM articles
-    LEFT JOIN comments ON articles.article_id = comments.article_id
-    ${topicQuery}
-    GROUP BY articles.article_id
-    ORDER BY COUNT(comments.comment_id) ${order};`
-    );
-  }
-
   if (validSorts.includes(sort) && validOrders.includes(order)) {
+    const orderQuery =
+      sort === "comment_count"
+        ? `ORDER BY COUNT(comments.comment_id) ${order};`
+        : `ORDER BY articles.${sort} ${order};`;
+
     return await db.query(
       `
     SELECT 
@@ -71,7 +61,7 @@ exports.fetchAllArticles = async (
     LEFT JOIN comments ON articles.article_id = comments.article_id
     ${topicQuery}
     GROUP BY articles.article_id 
-    ORDER BY articles.${sort} ${order};`
+    ${orderQuery};`
     );
   }
 };
