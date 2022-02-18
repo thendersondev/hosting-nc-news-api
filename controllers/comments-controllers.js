@@ -1,4 +1,3 @@
-const { fetchArticle } = require("../models/articles-models");
 const {
   fetchCommentsByArticleId,
   makeComment,

@@ -253,7 +253,7 @@ describe("app.js", () => {
                 article: { comment_count },
               },
             }) => {
-              expect(comment_count).toBe("11");
+              expect(comment_count).toBe(11);
             }
           );
       });

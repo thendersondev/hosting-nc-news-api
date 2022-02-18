@@ -58,7 +58,10 @@ exports.fetchArticle = async (id) => {
   await checkIfExists("articles", id, "article_id");
 
   const { rows } = await db.query(
-    `SELECT articles.*, COUNT(comments.comment_id) AS comment_count
+    `SELECT 
+    articles.*, 
+    CAST(COUNT(comments.comment_id) AS int) AS comment_count
+
     FROM articles
     LEFT JOIN comments ON articles.article_id = comments.article_id
     WHERE articles.article_id = $1
