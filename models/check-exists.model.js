@@ -7,10 +7,6 @@ exports.checkIfExists = async (table, check, column) => {
   const columnQuery = format("SELECT * FROM %I;", table);
   const { rows } = await db.query(columnQuery);
 
-  if (table === "articles" && column === "article_id" && isNaN(check)) {
-    return; // exit check early to allow PSQL error to trigger
-  }
-
   if (column === undefined) {
     const keys = Object.keys(rows[0]);
 
@@ -26,6 +22,10 @@ exports.checkIfExists = async (table, check, column) => {
           msg: `${table.slice(0, table.length - 1)}: ${check} not found`,
         });
   } else {
+    if (column.endsWith("_id") && isNaN(check)) {
+      return; // exit check early to allow PSQL error to trigger
+    }
+
     const values = rows
       .map((entry) => {
         return entry[column];
