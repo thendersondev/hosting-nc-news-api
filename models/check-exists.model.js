@@ -7,13 +7,13 @@ exports.checkIfExists = async (table, check, column) => {
   const columnQuery = format("SELECT * FROM %I;", table);
   const { rows } = await db.query(columnQuery);
 
+  let coercedCheck = check;
+  if (!isNaN(+check)) {
+    coercedCheck = +check;
+  }
+
   if (column === undefined) {
     const keys = Object.keys(rows[0]);
-
-    let coercedCheck = check;
-    if (!isNaN(+check)) {
-      coercedCheck = +check;
-    }
 
     return keys.includes(coercedCheck)
       ? true
@@ -31,11 +31,6 @@ exports.checkIfExists = async (table, check, column) => {
         return entry[column];
       })
       .flat();
-
-    let coercedCheck = check;
-    if (!isNaN(+check)) {
-      coercedCheck = +check;
-    }
 
     return values.includes(coercedCheck)
       ? true
