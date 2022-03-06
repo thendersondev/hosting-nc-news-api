@@ -480,7 +480,7 @@ describe("app.js", () => {
               expect(total_count).toBe(12);
             });
         });
-        it.only("status:400, responds with invalid input when passed invalid value data type", () => {
+        it("status:400, responds with invalid input when passed invalid value data type", () => {
           const invalidLimit = request(app)
             .get("/api/articles?limit=marco")
             .expect(400)
@@ -708,7 +708,7 @@ describe("app.js", () => {
           .get("/api/articles/1/comments")
           .expect(200)
           .then(({ body: { comments } }) => {
-            expect(comments).toHaveLength(11);
+            expect(comments).toHaveLength(10);
             comments.forEach((comment) => {
               expect(comment).toEqual(
                 expect.objectContaining({
@@ -754,6 +754,91 @@ describe("app.js", () => {
               })
             );
           });
+      });
+      describe.only("PAGINATION QUERIES", () => {
+        it("accepts a limit query, which limits  the number of responses, defaulting to 10", () => {
+          const defaultCase = request(app)
+            .get("/api/articles/1/comments")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments).toHaveLength(10);
+            });
+
+          const limitFive = request(app)
+            .get("/api/articles/1/comments?limit=5")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments).toHaveLength(5);
+            });
+
+          return Promise.all([defaultCase, limitFive]);
+        });
+        it("accepts a p query, which specifies the page at which to start based on the limit", () => {
+          const limitFiveP1 = request(app)
+            .get("/api/articles/1/comments?limit=5&p=1")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments).toHaveLength(5);
+              comments.forEach((comment, index) => {
+                expect(comment).toEqual(
+                  expect.objectContaining({
+                    comment_id: index + 2,
+                    // first 5 comments have id's 2-6
+                  })
+                );
+              });
+            });
+          const limitFiveP2 = request(app)
+            .get("/api/articles/1/comments?limit=5&p=2")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments).toHaveLength(5);
+              comments.forEach((comment, index) => {
+                expect(comment).toEqual(
+                  expect.objectContaining({
+                    comment_id: index < 3 ? index + 7 : index + 9,
+                    // first 3 comments have id's 7-9, then 12-13
+                  })
+                );
+              });
+            });
+          const limitFiveP3 = request(app)
+            .get("/api/articles/1/comments?limit=5&p=3")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments).toHaveLength(1);
+              expect(comments[0].comment_id).toBe(18);
+            });
+          const limitFiveP4 = request(app)
+            .get("/api/articles/1/comments?limit=5&p=4")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments).toHaveLength(0);
+            });
+
+          return Promise.all([
+            limitFiveP1,
+            limitFiveP2,
+            limitFiveP3,
+            limitFiveP4,
+          ]);
+        });
+        it("status:400, responds with invalid input when passed invalid value data type", () => {
+          const invalidLimit = request(app)
+            .get("/api/articles/1/comments?limit=cheech&p=1")
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("Invalid input");
+            });
+          const invalidPage = request(app)
+            .get("/api/articles/1/comments?limit=5&p=chong")
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("Invalid input");
+            });
+
+          return Promise.all([invalidLimit, invalidPage]);
+        });
       });
     });
     describe("POST", () => {

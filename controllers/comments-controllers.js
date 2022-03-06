@@ -8,11 +8,13 @@ const {
 exports.getCommentsByArticleId = async (req, res, next) => {
   try {
     const { article_id: id } = req.params;
+    const { limit, p } = req.query;
 
-    const comments = await fetchCommentsByArticleId(id);
+    const comments = await fetchCommentsByArticleId(id, limit, p);
 
     res.status(200).send({ comments });
   } catch (err) {
+    console.log(err);
     next(err);
   }
 };
