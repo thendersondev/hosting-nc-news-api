@@ -2,6 +2,7 @@ const {
   fetchArticle,
   updateArticleById,
   fetchAllArticles,
+  createArticle,
 } = require("../models/articles-models");
 
 exports.getArticles = async (req, res, next) => {
@@ -36,6 +37,19 @@ exports.patchArticleById = async (req, res, next) => {
     const article = await updateArticleById(id, number);
 
     res.status(200).send({ article });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postArticle = async (req, res, next) => {
+  try {
+    const { body } = req;
+
+    const { article_id: id } = await createArticle(body);
+    const articleWithComments = await fetchArticle(id);
+
+    res.status(201).send({ article: articleWithComments });
   } catch (err) {
     next(err);
   }
