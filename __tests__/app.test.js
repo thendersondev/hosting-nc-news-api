@@ -400,6 +400,75 @@ describe("app.js", () => {
         });
       });
     });
+    describe.only("POST", () => {
+      it("status:201, responds with newly created article", () => {
+        return request(app)
+          .post("/api/articles")
+          .send({
+            author: "lurker",
+            title: "how do I turn this off",
+            body: "people don't think it be like it is but it do",
+            topic: "paper",
+          })
+          .expect(201)
+          .then(({ body: { article } }) => {
+            expect(article).toEqual(
+              expect.objectContaining({
+                article_id: 13,
+                title: "how do I turn this off",
+                topic: "paper",
+                author: "lurker",
+                body: "people don't think it be like it is but it do",
+                created_at: expect.any(String),
+                votes: 0,
+                comment_count: 0,
+              })
+            );
+          });
+      });
+      it("status:400, responds with invalid input when passed an invalid body", () => {
+        return request(app)
+          .post("/api/articles")
+          .send({
+            author: "lurker",
+            body: "people don't think it be like it is but it do",
+            topic: "cats",
+          })
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("Invalid input");
+          });
+      });
+      it("status:404, responds with user/topic not found when passed a non-existent user/topic", () => {
+        const userNotFound = request(app)
+          .post("/api/articles")
+          .send({
+            author: "jimmy",
+            title: "how do I turn this on",
+            body: "people do think it be like it is but it don't",
+            topic: "cats",
+          })
+          .expect(404)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("user: jimmy not found");
+          });
+
+        const topicNotFound = request(app)
+          .post("/api/articles")
+          .send({
+            author: "lurker",
+            title: "have you ever had a dream?",
+            body: "Have you ever had a dream that you, um, you had, your, you- you could, you'll do, you- you wants, you, you could do so, you- you'll do, you could- you, you want, you want him to do you so much you could do anything?",
+            topic: "dreams",
+          })
+          .expect(404)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("topic: dreams not found");
+          });
+
+        return Promise.all([userNotFound, topicNotFound]);
+      });
+    });
   });
   describe("/api/articles/:article_id", () => {
     describe("GET", () => {

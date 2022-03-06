@@ -58,7 +58,8 @@ exports.fetchArticle = async (id) => {
   await checkIfExists("articles", id, "article_id");
 
   const { rows } = await db.query(
-    `SELECT 
+    `
+    SELECT 
     articles.*, 
     CAST(COUNT(comments.comment_id) AS int) AS comment_count
 
@@ -76,11 +77,27 @@ exports.updateArticleById = async (id, number) => {
 
   const { rows } = await db.query(
     `
-      UPDATE articles 
-      SET votes = votes + $1
-      WHERE article_id = $2
-      RETURNING *;`,
+    UPDATE articles 
+    SET votes = votes + $1
+    WHERE article_id = $2
+    RETURNING *;`,
     [number, id]
+  );
+  return rows[0];
+};
+
+exports.createArticle = async ({ author, title, body, topic }) => {
+  await checkIfExists("users", author, "username");
+  await checkIfExists("topics", topic, "slug");
+
+  const { rows } = await db.query(
+    `
+    INSERT INTO articles
+    (author, title, body, topic)
+    VALUES
+    ($1, $2, $3, $4)
+    RETURNING *;`,
+    [author, title, body, topic]
   );
   return rows[0];
 };
