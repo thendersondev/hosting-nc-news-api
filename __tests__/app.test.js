@@ -167,6 +167,37 @@ describe("app.js", () => {
           });
       });
     });
+    describe("POST", () => {
+      it("status:201, responds with an a newly added topic object when passed a valid body", () => {
+        return request(app)
+          .post("/api/topics")
+          .send({
+            slug: "why you should hire me",
+            description: "cause I'm awesome",
+          })
+          .expect(201)
+          .then(({ body: { topic } }) => {
+            expect(topic).toEqual(
+              expect.objectContaining({
+                slug: "why you should hire me",
+                description: "cause I'm awesome",
+              })
+            );
+          });
+      });
+      it("status:400, responds with invalid input when body is missing a key", () => {
+        return request(app)
+          .post("/api/topics")
+          .send({
+            snail: "I love my shell",
+            description: "the pros and cons of living in a caravan",
+          })
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("Invalid input");
+          });
+      });
+    });
   });
   describe("/api/users", () => {
     describe("GET", () => {
@@ -382,7 +413,7 @@ describe("app.js", () => {
               expect(msg).toBe("Articles can only be ordered asc or desc");
             });
         });
-        test("status:404, response of 'article x not found' when specified values don't exist in database (sort_by and topic queries only)", () => {
+        test("status:404, response of 'article/topic x not found' when specified values don't exist in database (sort_by and topic queries only)", () => {
           const sortQuery = request(app)
             .get("/api/articles?sort_by=beavis")
             .expect(404)
@@ -755,7 +786,7 @@ describe("app.js", () => {
             );
           });
       });
-      describe.only("PAGINATION QUERIES", () => {
+      describe("PAGINATION QUERIES", () => {
         it("accepts a limit query, which limits  the number of responses, defaulting to 10", () => {
           const defaultCase = request(app)
             .get("/api/articles/1/comments")
@@ -941,7 +972,7 @@ describe("app.js", () => {
           });
       });
     });
-    describe("PATCH", () => {
+    describe.skip("PATCH", () => {
       it("status:200, responds with the updated comment, accepts positive and negative numbers", () => {
         const patchIncOne = request(app)
           .patch("/api/comments/1")
@@ -988,7 +1019,7 @@ describe("app.js", () => {
                 body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
                 article_id: 9,
                 author: "butter_bridge",
-                votes: 32,
+                votes: 26,
                 created_at: expect.any(String),
               })
             );
@@ -1005,7 +1036,7 @@ describe("app.js", () => {
                 body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
                 article_id: 9,
                 author: "butter_bridge",
-                votes: 26,
+                votes: 10,
                 created_at: expect.any(String),
               })
             );

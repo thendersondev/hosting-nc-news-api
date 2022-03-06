@@ -14,7 +14,6 @@ exports.getCommentsByArticleId = async (req, res, next) => {
 
     res.status(200).send({ comments });
   } catch (err) {
-    console.log(err);
     next(err);
   }
 };
