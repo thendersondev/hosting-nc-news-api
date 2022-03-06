@@ -222,7 +222,7 @@ describe("app.js", () => {
           .get("/api/articles")
           .expect(200)
           .then(({ body: { articles } }) => {
-            expect(articles).toHaveLength(12);
+            expect(articles).toHaveLength(10);
             articles.forEach((article) => {
               expect(article).toEqual(
                 expect.objectContaining({
@@ -339,7 +339,7 @@ describe("app.js", () => {
             .get("/api/articles?topic=mitch")
             .expect(200)
             .then(({ body: { articles } }) => {
-              expect(articles).toHaveLength(11);
+              expect(articles).toHaveLength(10);
               articles.forEach((article) => {
                 expect(article).toEqual(
                   expect.objectContaining({
@@ -399,8 +399,106 @@ describe("app.js", () => {
           return Promise.all([sortQuery, topicQuery]);
         });
       });
+      describe("PAGINATION QUERIES", () => {
+        it("accepts a limit query, which limits  the number of responses, defaulting to 10", () => {
+          const defaultCase = request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toHaveLength(10);
+            });
+
+          const limitFive = request(app)
+            .get("/api/articles?limit=5")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toHaveLength(5);
+            });
+
+          return Promise.all([defaultCase, limitFive]);
+        });
+        it("accepts a p query, which specifies the page at which to start based on the limit", () => {
+          const limitFiveP1 = request(app)
+            .get("/api/articles?sort_by=article_id&order=asc&limit=5&p=1")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toHaveLength(5);
+              articles.forEach((article, index) => {
+                expect(article).toEqual(
+                  expect.objectContaining({
+                    article_id: index + 1,
+                  })
+                );
+              });
+            });
+          const limitFiveP2 = request(app)
+            .get("/api/articles?sort_by=article_id&order=asc&limit=5&p=2")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toHaveLength(5);
+              articles.forEach((article, index) => {
+                expect(article).toEqual(
+                  expect.objectContaining({
+                    article_id: index + 6,
+                  })
+                );
+              });
+            });
+          const limitFiveP3 = request(app)
+            .get("/api/articles?sort_by=article_id&order=asc&limit=5&p=3")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toHaveLength(2);
+              articles.forEach((article, index) => {
+                expect(article).toEqual(
+                  expect.objectContaining({
+                    article_id: index + 11,
+                  })
+                );
+              });
+            });
+          const limitFiveP4 = request(app)
+            .get("/api/articles?sort_by=article_id&order=asc&limit=5&p=4")
+            .expect(200)
+            .then(({ body: { articles } }) => {
+              expect(articles).toHaveLength(0);
+            });
+
+          return Promise.all([
+            limitFiveP1,
+            limitFiveP2,
+            limitFiveP3,
+            limitFiveP4,
+          ]);
+        });
+        it("responds with a total_count property which displays the total number of articles with filters applied (discounting limit)", () => {
+          return request(app)
+            .get("/api/articles?limit=5&p=3")
+            .expect(200)
+            .then(({ body: { articles, total_count } }) => {
+              expect(articles).toHaveLength(2);
+              expect(total_count).toBe(12);
+            });
+        });
+        it.only("status:400, responds with invalid input when passed invalid value data type", () => {
+          const invalidLimit = request(app)
+            .get("/api/articles?limit=marco")
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("Invalid input");
+            });
+          const invalidPage = request(app)
+            .get("/api/articles?limit=5&p=polo")
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("Invalid input");
+            });
+
+          return Promise.all([invalidLimit, invalidPage]);
+        });
+      });
     });
-    describe.only("POST", () => {
+    describe("POST", () => {
       it("status:201, responds with newly created article", () => {
         return request(app)
           .post("/api/articles")

@@ -4,7 +4,9 @@ const { checkIfExists } = require("./check-exists.model");
 exports.fetchAllArticles = async (
   sort = "created_at",
   order = "desc",
-  topic
+  topic,
+  limit = 10,
+  page = 1
 ) => {
   switch (sort) {
     case "comment_count":
@@ -36,21 +38,31 @@ exports.fetchAllArticles = async (
 
   const orderQuery =
     sort === "comment_count"
-      ? `ORDER BY COUNT(comments.comment_id) ${order};`
-      : `ORDER BY articles.${sort} ${order};`;
+      ? `ORDER BY COUNT(comments.comment_id) ${order}`
+      : `ORDER BY articles.${sort} ${order}`;
+
+  let coercedPage = page;
+  if (!isNaN(+page)) {
+    coercedPage = +page;
+  }
+
+  const offset = limit * coercedPage - limit;
 
   return await db.query(
     `
     SELECT 
     articles.article_id, articles.title, articles.topic, 
     articles.author, articles.created_at, articles.votes, 
-    CAST(COUNT(comments.comment_id) AS int) AS comment_count
+    CAST(COUNT(comments.comment_id) AS int) AS comment_count,
+    CAST(COUNT(*) OVER() AS int) AS total_count
 
     FROM articles
     LEFT JOIN comments ON articles.article_id = comments.article_id
     ${topicQuery}
     GROUP BY articles.article_id 
-    ${orderQuery};`
+    ${orderQuery}
+    LIMIT $1 OFFSET $2;`,
+    [limit, offset]
   );
 };
 
