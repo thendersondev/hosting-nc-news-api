@@ -7,11 +7,23 @@ const {
 
 exports.getArticles = async (req, res, next) => {
   try {
-    const { sort_by: sort, order, topic } = req.query;
+    const { sort_by: sort, order, topic, limit, p } = req.query;
 
-    const { rows: articles } = await fetchAllArticles(sort, order, topic);
+    const { rows: articles } = await fetchAllArticles(
+      sort,
+      order,
+      topic,
+      limit,
+      p
+    );
 
-    res.status(200).send({ articles });
+    let total_count;
+    articles.forEach((article, index) => {
+      if (index === 0) total_count = article.total_count;
+      delete article.total_count;
+    });
+
+    res.status(200).send({ articles, total_count });
   } catch (err) {
     next(err);
   }
