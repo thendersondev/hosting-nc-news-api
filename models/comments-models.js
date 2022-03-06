@@ -31,8 +31,25 @@ exports.cancelComment = async (id) => {
   await checkIfExists("comments", id, "comment_id");
 
   const { rows } = await db.query(
-    `DELETE FROM comments WHERE comment_id = $1 RETURNING *;`,
+    `
+    DELETE FROM comments 
+    WHERE comment_id = $1 
+    RETURNING *;`,
     [id]
+  );
+  return rows[0];
+};
+
+exports.updateComment = async (id, inc) => {
+  await checkIfExists("comments", id, "comment_id");
+
+  const { rows } = await db.query(
+    `
+    UPDATE comments 
+    SET votes = votes + $1
+    WHERE comment_id = $2
+    RETURNING *;`,
+    [inc, id]
   );
   return rows[0];
 };
