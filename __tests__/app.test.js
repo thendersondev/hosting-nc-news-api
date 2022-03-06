@@ -972,7 +972,7 @@ describe("app.js", () => {
           });
       });
     });
-    describe.skip("PATCH", () => {
+    describe.only("PATCH", () => {
       it("status:200, responds with the updated comment, accepts positive and negative numbers", () => {
         const patchIncOne = request(app)
           .patch("/api/comments/1")
@@ -992,51 +992,51 @@ describe("app.js", () => {
           });
 
         const patchDecOne = request(app)
-          .patch("/api/comments/1")
+          .patch("/api/comments/2")
           .send({ inc_votes: -1 })
           .expect(200)
           .then(({ body: { comment } }) => {
             expect(comment).toEqual(
               expect.objectContaining({
-                comment_id: 1,
-                body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
-                article_id: 9,
+                comment_id: 2,
+                body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+                article_id: 1,
                 author: "butter_bridge",
-                votes: 16,
+                votes: 13,
                 created_at: expect.any(String),
               })
             );
           });
 
         const patchIncMultiple = request(app)
-          .patch("/api/comments/1")
+          .patch("/api/comments/3")
           .send({ inc_votes: 16 })
           .expect(200)
           .then(({ body: { comment } }) => {
             expect(comment).toEqual(
               expect.objectContaining({
-                comment_id: 1,
-                body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
-                article_id: 9,
-                author: "butter_bridge",
-                votes: 26,
+                comment_id: 3,
+                body: "Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.",
+                article_id: 1,
+                author: "icellusedkars",
+                votes: 116,
                 created_at: expect.any(String),
               })
             );
           });
 
         const patchDecMultiple = request(app)
-          .patch("/api/comments/1")
+          .patch("/api/comments/4")
           .send({ inc_votes: -6 })
           .expect(200)
           .then(({ body: { comment } }) => {
             expect(comment).toEqual(
               expect.objectContaining({
-                comment_id: 1,
-                body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
-                article_id: 9,
-                author: "butter_bridge",
-                votes: 10,
+                comment_id: 4,
+                body: " I carry a log — yes. Is it funny to you? It is not to me.",
+                article_id: 1,
+                author: "icellusedkars",
+                votes: -106,
                 created_at: expect.any(String),
               })
             );
