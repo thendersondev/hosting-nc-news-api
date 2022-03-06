@@ -731,6 +731,52 @@ describe("app.js", () => {
           });
       });
     });
+    describe("DELETE", () => {
+      it("status:204, responds with no body upon successful deletion", () => {
+        return request(app)
+          .get("/api/articles/1")
+          .expect(200)
+          .then(({ body: { article } }) => {
+            expect(article).toEqual(
+              expect.objectContaining({
+                article_id: 1,
+                title: "Living in the shadow of a great man",
+                topic: "mitch",
+                author: "butter_bridge",
+                body: "I find this existence challenging",
+                created_at: expect.any(String),
+                votes: 100,
+              })
+            );
+          })
+          .then(() => {
+            return request(app).delete("/api/articles/1").expect(204);
+          })
+          .then(({ body }) => {
+            expect(body).toEqual({});
+            return request(app).get("/api/articles/1").expect(404);
+          })
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("article: 1 not found");
+          });
+      });
+      it("status:400, responds with invalid input when passed an invalid article_id", () => {
+        return request(app)
+          .delete("/api/articles/spicy-meat")
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("Invalid input");
+          });
+      });
+      it("status:404, responds with article: X not found when passed a non-existent article_id", () => {
+        return request(app)
+          .delete("/api/articles/100")
+          .expect(404)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("article: 100 not found");
+          });
+      });
+    });
   });
   describe("/api/articles/:article_id/comments", () => {
     describe("GET", () => {
@@ -947,12 +993,20 @@ describe("app.js", () => {
   });
   describe("/api/comments/:comment_id", () => {
     describe("DELETE", () => {
-      test("status:204, empty response body", () => {
+      test("status:204, empty response body and comment deleted from DB", () => {
         return request(app)
-          .delete("/api/comments/1")
-          .expect(204)
+          .get("/api/articles/9/comments")
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).toHaveLength(2);
+            return request(app).delete("/api/comments/1").expect(204);
+          })
           .then(({ body }) => {
             expect(body).toEqual({});
+            return request(app).get("/api/articles/9/comments").expect(200);
+          })
+          .then(({ body: { comments } }) => {
+            expect(comments).toHaveLength(1);
           });
       });
       test("status:400, responds with invalid input when passsed an invalid comment_id", () => {
@@ -972,7 +1026,7 @@ describe("app.js", () => {
           });
       });
     });
-    describe.only("PATCH", () => {
+    describe("PATCH", () => {
       it("status:200, responds with the updated comment, accepts positive and negative numbers", () => {
         const patchIncOne = request(app)
           .patch("/api/comments/1")
@@ -1100,7 +1154,7 @@ describe("app.js", () => {
 
       return Promise.all([topicCheck, articleIdCheck]);
     });
-    test("Returns of {status: 404, msg: property not found } if given a property that doesn't exist in a given table", () => {
+    test("status:404, responds with msg: property not found if given a property that doesn't exist in a given table", () => {
       const topicCheck = checkIfExists("topics", "aliens")
         .then((result) => {
           expect(result).toBe(undefined);

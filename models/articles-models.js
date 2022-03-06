@@ -113,3 +113,26 @@ exports.createArticle = async ({ author, title, body, topic }) => {
   );
   return rows[0];
 };
+
+exports.cancelArticle = async (id) => {
+  await checkIfExists("articles", id, "article_id");
+
+  await db.query(
+    `
+    ALTER TABLE comments
+    DROP CONSTRAINT comments_article_id_fkey,
+    ADD CONSTRAINT comments_article_id_fkey
+      FOREIGN KEY (article_id)
+      REFERENCES articles(article_id)
+      ON DELETE CASCADE;`
+  );
+  /* probably less costly to just alter manage-tables.js 
+  directly but wanted to learn how to do this with queries */
+
+  await db.query(
+    `
+    DELETE FROM articles 
+    WHERE article_id = $1;`,
+    [id]
+  );
+};

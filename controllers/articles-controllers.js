@@ -3,6 +3,7 @@ const {
   updateArticleById,
   fetchAllArticles,
   createArticle,
+  cancelArticle,
 } = require("../models/articles-models");
 
 exports.getArticles = async (req, res, next) => {
@@ -62,6 +63,18 @@ exports.postArticle = async (req, res, next) => {
     const articleWithComments = await fetchArticle(id);
 
     res.status(201).send({ article: articleWithComments });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteArticle = async (req, res, next) => {
+  try {
+    const { article_id: id } = req.params;
+
+    await cancelArticle(id);
+
+    res.status(204).send();
   } catch (err) {
     next(err);
   }
