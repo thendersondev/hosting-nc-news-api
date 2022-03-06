@@ -672,7 +672,7 @@ describe("app.js", () => {
             expect(body).toEqual({});
           });
       });
-      test("status:400, returns invalid input when passsed an invalid comment_id", () => {
+      test("status:400, responds with invalid input when passsed an invalid comment_id", () => {
         return request(app)
           .delete("/api/comments/jeff-bezos")
           .expect(400)
@@ -680,12 +680,126 @@ describe("app.js", () => {
             expect(msg).toEqual("Invalid input");
           });
       });
-      test("status:404, returns comment: x not found when passed a non-existent comment_id", () => {
+      test("status:404, responds with comment: x not found when passed a non-existent comment_id", () => {
         return request(app)
           .delete("/api/comments/1688")
           .expect(404)
           .then(({ body: { msg } }) => {
             expect(msg).toEqual("comment: 1688 not found");
+          });
+      });
+    });
+    describe("PATCH", () => {
+      it("status:200, responds with the updated comment, accepts positive and negative numbers", () => {
+        const patchIncOne = request(app)
+          .patch("/api/comments/1")
+          .send({ inc_votes: 1 })
+          .expect(200)
+          .then(({ body: { comment } }) => {
+            expect(comment).toEqual(
+              expect.objectContaining({
+                comment_id: 1,
+                body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+                article_id: 9,
+                author: "butter_bridge",
+                votes: 17,
+                created_at: expect.any(String),
+              })
+            );
+          });
+
+        const patchDecOne = request(app)
+          .patch("/api/comments/1")
+          .send({ inc_votes: -1 })
+          .expect(200)
+          .then(({ body: { comment } }) => {
+            expect(comment).toEqual(
+              expect.objectContaining({
+                comment_id: 1,
+                body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+                article_id: 9,
+                author: "butter_bridge",
+                votes: 16,
+                created_at: expect.any(String),
+              })
+            );
+          });
+
+        const patchIncMultiple = request(app)
+          .patch("/api/comments/1")
+          .send({ inc_votes: 16 })
+          .expect(200)
+          .then(({ body: { comment } }) => {
+            expect(comment).toEqual(
+              expect.objectContaining({
+                comment_id: 1,
+                body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+                article_id: 9,
+                author: "butter_bridge",
+                votes: 32,
+                created_at: expect.any(String),
+              })
+            );
+          });
+
+        const patchDecMultiple = request(app)
+          .patch("/api/comments/1")
+          .send({ inc_votes: -6 })
+          .expect(200)
+          .then(({ body: { comment } }) => {
+            expect(comment).toEqual(
+              expect.objectContaining({
+                comment_id: 1,
+                body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+                article_id: 9,
+                author: "butter_bridge",
+                votes: 26,
+                created_at: expect.any(String),
+              })
+            );
+          });
+
+        return Promise.all([
+          patchIncOne,
+          patchDecOne,
+          patchIncMultiple,
+          patchDecMultiple,
+        ]);
+      });
+      it("status:400, responds with invalid input when body is missing or invalid key/value is used", () => {
+        const emptyBody = request(app)
+          .patch("/api/comments/1")
+          .send({})
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("Invalid input");
+          });
+        const invalidKey = request(app)
+          .patch("/api/comments/1")
+          .send({ inc: 100 })
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("Invalid input");
+          });
+        const invalidValue = request(app)
+          .patch("/api/comments/1")
+          .send({ inc_votes: "tree-fiddy" })
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("Invalid input");
+          });
+
+        return Promise.all([emptyBody, invalidKey, invalidValue]);
+      });
+      it("status:404, responds with comment not found when passed non-existent comment_id", () => {
+        return request(app)
+          .patch("/api/comments/100")
+          .send({
+            inc_votes: 10,
+          })
+          .expect(404)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("comment: 100 not found");
           });
       });
     });
