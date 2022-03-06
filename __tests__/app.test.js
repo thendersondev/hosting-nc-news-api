@@ -32,14 +32,28 @@ describe("app.js", () => {
                 },
                 "GET /api/topics": {
                   description: "serves an array of all topics",
-                  queries: [],
                   exampleResponse: {
                     topics: [{ slug: "football", description: "Footie!" }],
                   },
                 },
+                "POST /api/topics": {
+                  description:
+                    "posts a new topic and responds with the posted body on a key of topic",
+                  exampleBody: {
+                    slug: "cheese",
+                    description: "I love cheese.",
+                  },
+                  exampleResponse: {
+                    topic: [
+                      {
+                        slug: "cheese",
+                        description: "I love cheese.",
+                      },
+                    ],
+                  },
+                },
                 "GET /api/users": {
                   description: "serves an array of all registered users",
-                  queries: [],
                   exampleResponse: {
                     users: [
                       {
@@ -51,9 +65,23 @@ describe("app.js", () => {
                     ],
                   },
                 },
+                "GET /api/users/:username": {
+                  description: "serves requested username on a key of user",
+                  exampleResponse: {
+                    user: [
+                      {
+                        username: "rogersop",
+                        name: "paul",
+                        avatar_url:
+                          "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4",
+                      },
+                    ],
+                  },
+                },
                 "GET /api/articles": {
                   description: "serves an array of all articles",
-                  queries: ["author", "topic", "sort_by", "order"],
+                  queries: ["topic", "sort_by", "order"],
+                  paginationQueries: ["limit", "p"],
                   exampleResponse: {
                     articles: [
                       {
@@ -68,28 +96,49 @@ describe("app.js", () => {
                     ],
                   },
                 },
-                "GET /api/articles/:article_id": {
-                  description: "serves the specified article_id",
-                  queries: [],
+                "POST /api/articles": {
+                  description:
+                    "posts a new article and responds with posted article on a key of article (author and topic must be valid)",
+                  exampleBody: {
+                    author: "lurker",
+                    title: "wololo",
+                    body: "now you blue",
+                    topic: "paper",
+                  },
                   exampleResponse: {
                     article: [
                       {
-                        article_id: 1,
-                        title: "Living in the shadow of a great man",
-                        topic: "mitch",
-                        author: "butter_bridge",
-                        body: "I find this existence challenging",
-                        created_at: "2020-07-09T20:11:00.000Z",
-                        votes: 100,
-                        comment_count: 11,
+                        article_id: 14,
+                        title: "wololo",
+                        body: "now you blue",
+                        topic: "paper",
+                        author: "lurker",
+                        created_at: "2020-08-03T13:14:00.000Z",
+                        votes: 0,
+                        comment_count: 0,
                       },
                     ],
+                  },
+                },
+                "GET /api/articles/:article_id": {
+                  description:
+                    "serves the requested article on a key of article",
+                  exampleResponse: {
+                    article: {
+                      article_id: 5,
+                      title: "UNCOVERED: catspiracy to bring down democracy",
+                      topic: "cats",
+                      author: "rogersop",
+                      body: "Bastet walks amongst us, and the cats are taking arms!",
+                      created_at: "2020-08-03T13:14:00.000Z",
+                      votes: 0,
+                      comment_count: 2,
+                    },
                   },
                 },
                 "PATCH /api/articles/:article_id": {
                   description:
                     "increments the vote count of a specified article_id by number provided and serves the patched article",
-                  queries: [],
                   exampleBody: { inc_votes: 100 },
                   exampleResponse: {
                     users: {
@@ -103,10 +152,15 @@ describe("app.js", () => {
                     },
                   },
                 },
+                "DELETE /api/articles/:article_id": {
+                  description:
+                    "deletes the selected article and all associated comments",
+                  exampleResponse: {},
+                },
                 "GET /api/articles/:article_id/comments": {
                   description:
                     "serves an array of comments for specified article_id",
-                  queries: [],
+                  paginationQueries: ["limit", "p"],
                   exampleResponse: {
                     comments: [
                       {
@@ -123,7 +177,6 @@ describe("app.js", () => {
                 "POST /api/articles/:article_id/comments": {
                   description:
                     "posts a new comment under specified article_id and serves comment as an object",
-                  queries: [],
                   exampleBody: {
                     username: "icellusedkars",
                     body: "I love cheese.",
@@ -139,8 +192,24 @@ describe("app.js", () => {
                     },
                   },
                 },
+                "PATCH /api/comments/:comment_id": {
+                  description:
+                    "increments the vote count of a specified comment_id by number provided and serves the patched comment",
+                  exampleBody: { inc_votes: 20 },
+                  exampleQuery: {
+                    comment: {
+                      comment_id: 1,
+                      body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+                      article_id: 9,
+                      author: "butter_bridge",
+                      votes: 37,
+                      created_at: "2020-10-31T03:03:00.000Z",
+                    },
+                  },
+                },
                 "DELETE /api/comments/:comment_id": {
                   description: "deletes comment with associated comment_id",
+                  exampleResponse: {},
                 },
               })
             );
