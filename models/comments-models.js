@@ -1,12 +1,17 @@
 const db = require("../db/connection");
 const { checkIfExists } = require("./check-exists.model");
 
-exports.fetchCommentsByArticleId = async (id) => {
+exports.fetchCommentsByArticleId = async (id, limit = 10, p = 1) => {
   await checkIfExists("articles", id, "article_id");
 
+  const offset = limit * p - limit;
+
   const { rows } = await db.query(
-    `SELECT * FROM comments WHERE article_id = $1`,
-    [id]
+    `
+    SELECT * FROM comments 
+    WHERE article_id = $1
+    LIMIT $2 OFFSET $3`,
+    [id, limit, offset]
   );
   return rows;
 };
