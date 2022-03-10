@@ -1,8 +1,24 @@
 const db = require("../db/connection");
 const { checkIfExists } = require("./check-exists.model");
 
-exports.fetchCommentsByArticleId = async (id, limit = 10, p = 1) => {
+exports.fetchCommentsByArticleId = async (
+  id,
+  limit = 10,
+  p = 1,
+  sort = "created_at",
+  order = "desc"
+) => {
   await checkIfExists("articles", id, "article_id");
+  await checkIfExists("comments", sort);
+
+  const validOrders = ["asc", "ASC", "desc", "DESC"];
+  switch (validOrders.includes(order)) {
+    case false:
+      return Promise.reject({
+        status: 400,
+        msg: "Comments can only be ordered asc or desc",
+      });
+  }
 
   const offset = limit * p - limit;
 
@@ -10,6 +26,7 @@ exports.fetchCommentsByArticleId = async (id, limit = 10, p = 1) => {
     `
     SELECT * FROM comments 
     WHERE article_id = $1
+    ORDER BY ${sort} ${order}
     LIMIT $2 OFFSET $3`,
     [id, limit, offset]
   );
