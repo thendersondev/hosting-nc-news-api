@@ -901,6 +901,92 @@ describe("app.js", () => {
             );
           });
       });
+      describe("QUERIES", () => {
+        test("responds with comments sorted by date in descending order (default case)", () => {
+          return request(app)
+            .get("/api/articles/1/comments")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments).toBeSorted({
+                key: "created_at",
+                descending: true,
+              });
+            });
+        });
+        test("accepts sort_by query, sorts comments by any valid column", () => {
+          // testing about half of possible valid column names
+          const commentIdSort = request(app)
+            .get("/api/articles/1/comments?sort_by=comment_id")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments).toBeSorted({
+                key: "comment_id",
+                descending: true,
+              });
+            });
+          const authorSort = request(app)
+            .get("/api/articles/1/comments?sort_by=author")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments).toBeSorted({ key: "author", descending: true });
+            });
+          const votesSort = request(app)
+            .get("/api/articles/1/comments?sort_by=votes")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments).toBeSorted({ key: "votes", descending: true });
+            });
+
+          return Promise.all([commentIdSort, authorSort, votesSort]);
+        });
+        test("accepts order query, sorts comments by asc or desc (defaulting to descending)", () => {
+          const dateAsc = request(app)
+            .get("/api/articles/1/comments?sort_by=created_at&order=asc")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments).toBeSorted({
+                key: "created_at",
+                ascending: true,
+              });
+            });
+          const votesAsc = request(app)
+            .get("/api/articles/1/comments?sort_by=votes&order=ASC")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments).toBeSorted({
+                key: "votes",
+                ascending: true,
+              });
+            });
+          const authorDesc = request(app)
+            .get("/api/articles/1/comments?sort_by=author&order=DESC")
+            .expect(200)
+            .then(({ body: { comments } }) => {
+              expect(comments).toBeSorted({
+                key: "author",
+                descending: true,
+              });
+            });
+          return Promise.all([dateAsc, votesAsc, authorDesc]);
+        });
+
+        test("status:400, response of 'Comments can only be ordered by asc or desc' when specified order value isn't valid", () => {
+          return request(app)
+            .get("/api/articles/1/comments?order=cats")
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("Comments can only be ordered asc or desc");
+            });
+        });
+        test("status:404, response of 'comment x not found' when specified values don't exist in database", () => {
+          return request(app)
+            .get("/api/articles/1/comments?sort_by=beavis")
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("comment: beavis not found");
+            });
+        });
+      });
       describe("PAGINATION QUERIES", () => {
         it("accepts a limit query, which limits  the number of responses, defaulting to 10", () => {
           const defaultCase = request(app)
@@ -925,35 +1011,18 @@ describe("app.js", () => {
             .expect(200)
             .then(({ body: { comments } }) => {
               expect(comments).toHaveLength(5);
-              comments.forEach((comment, index) => {
-                expect(comment).toEqual(
-                  expect.objectContaining({
-                    comment_id: index + 2,
-                    // first 5 comments have id's 2-6
-                  })
-                );
-              });
             });
           const limitFiveP2 = request(app)
             .get("/api/articles/1/comments?limit=5&p=2")
             .expect(200)
             .then(({ body: { comments } }) => {
               expect(comments).toHaveLength(5);
-              comments.forEach((comment, index) => {
-                expect(comment).toEqual(
-                  expect.objectContaining({
-                    comment_id: index < 3 ? index + 7 : index + 9,
-                    // first 3 comments have id's 7-9, then 12-13
-                  })
-                );
-              });
             });
           const limitFiveP3 = request(app)
             .get("/api/articles/1/comments?limit=5&p=3")
             .expect(200)
             .then(({ body: { comments } }) => {
               expect(comments).toHaveLength(1);
-              expect(comments[0].comment_id).toBe(18);
             });
           const limitFiveP4 = request(app)
             .get("/api/articles/1/comments?limit=5&p=4")

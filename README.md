@@ -1,27 +1,39 @@
 # Northcoders News API
 
-## Hosted api: https://toms-nc-news-api.herokuapp.com/api
+Northcoders News API is a RESTful api which has been created using Node.js, Express.js, PSQL.
+The database has been deployed through Heroku, you can visit the API [here](https://toms-nc-news-api.herokuapp.com/api).
 
-<br>
+## Summary
 
-## Summary:
+This project is my first attempt at creating and hosting an API using heroku. The API and all of its endpoints were created using test driven development with Jest and Supertest.
 
-This project is my first attempt at creating and hosting an API using heroku <br>
-<br>
+Feel free to fork and/or clone this repo. All dependencies can be installed with npm install. There are several scripts available which can be found in the package.json. Before doing anything you should create the following files in the root directory:
 
-## It's free real estate
+`.env.test (contents: PGDATABASE=nc_news_test)`
 
-Feel free to fork and/or clone this repo. All dependencies can be installed with npm install. There are several scripts available which can be found in the package.json. Before doing anything you should run the following scripts to initialise and seed the SQL database: <br>
+`.env.development (contents: PGDATABASE=nc_news)`
 
-- npm run setup-dbs
-- npm run seed-test
-- npm run seed
+Following this you can run the following scripts to seed the SQL database:
 
-You should also create the following files in the root directory: <br>
-.env.test (contents: PGDATABASE=nc_news_test) <br>
-.env.development (contents: PGDATABASE=nc_news) <br>
+```
+npm run setup-dbs
+npm run seed
+```
+
+Once the above is done you can run the tests using:
+
+```
+npm test
+```
 
 The minimum versions of Node.js and postgres which I can endorse for running the project are:
 
 - Node v17.2.0
 - psql v12.9
+
+## Built With
+
+- [Express](https://expressjs.com/) - Web framework for Node.js
+- [PSQL](https://www.postgresql.org/) - Open source relational database
+- [JEST](https://jestjs.io/) - JavaScript testing framework
+- [Supertest](https://www.npmjs.com/package/supertest) - HTTP testing framework
